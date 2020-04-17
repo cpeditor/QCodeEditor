@@ -6,5 +6,6 @@
         <file>languages/java.xml</file>
         <file>languages/lua.xml</file>
         <file>languages/python.xml</file>
+        <file>languages/js.xml</file>
     </qresource>
 </RCC>

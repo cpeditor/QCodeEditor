@@ -4,6 +4,7 @@
 #include <QJavaHighlighter>
 #include <QLineNumberArea>
 #include <QPythonHighlighter>
+#include <QJSHighlighter>
 #include <QStyleSyntaxHighlighter>
 #include <QSyntaxStyle>
 
@@ -320,8 +321,9 @@ void QCodeEditor::toggleBlockComment()
 {
     bool isCpp = dynamic_cast<QCXXHighlighter *>(m_highlighter);
     bool isJava = dynamic_cast<QJavaHighlighter *>(m_highlighter);
+    bool isJS = dynamic_cast<QJSHighlighter *>(m_highlighter);
     bool isPython = dynamic_cast<QPythonHighlighter *>(m_highlighter);
-    if (isCpp || isJava || isPython)
+    if (isCpp || isJava || isJS || isPython)
     {
         auto cursor = textCursor();
         int startPos = cursor.selectionStart();

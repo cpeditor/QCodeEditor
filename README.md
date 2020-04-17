@@ -23,6 +23,8 @@ must not use a resource file with the same name.
 1. C++ highlight rules.
 1. XML highlight rules.
 1. JSON highligh rules.
+1. Java highligh rules.
+1. JavaScript highligh rules.
 1. Frame selection.
 1. Qt Creator styles.
 

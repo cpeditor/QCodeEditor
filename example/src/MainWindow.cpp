@@ -11,6 +11,7 @@
 #include <QGLSLHighlighter>
 #include <QXMLHighlighter>
 #include <QJavaHighlighter>
+#include <QJSHighlighter>
 #include <QJSONHighlighter>
 #include <QLuaHighlighter>
 #include <QPythonHighlighter>
@@ -73,6 +74,7 @@ void MainWindow::initData()
         {"GLSL", new QGLSLHighlighter},
         {"XML",  new QXMLHighlighter},
         {"Java", new QJavaHighlighter },
+        {"JS", new QJSHighlighter},
         {"JSON", new QJSONHighlighter},
         {"LUA",  new QLuaHighlighter},
         {"Python",  new QPythonHighlighter},
