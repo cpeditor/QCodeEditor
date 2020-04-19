@@ -17,3 +17,34 @@ QSyntaxStyle* QStyleSyntaxHighlighter::syntaxStyle() const
 {
     return m_syntaxStyle;
 }
+
+QString QStyleSyntaxHighlighter::commentLineSequence() const
+{
+    return m_commentLineSequence;
+}
+
+void QStyleSyntaxHighlighter::setCommentLineSequence(const QString &commentLineSequence)
+{
+    m_commentLineSequence = commentLineSequence;
+}
+
+QString QStyleSyntaxHighlighter::startCommentBlockSequence() const
+{
+    return m_startCommentBlockSequence;
+}
+
+void QStyleSyntaxHighlighter::setStartCommentBlockSequence(const QString &startCommentBlockSequence)
+{
+    m_startCommentBlockSequence = startCommentBlockSequence;
+}
+
+QString QStyleSyntaxHighlighter::endCommentBlockSequence() const
+{
+    return m_endCommentBlockSequence;
+}
+
+void QStyleSyntaxHighlighter::setEndCommentBlockSequence(const QString &endCommentBlockSequence)
+{
+    m_endCommentBlockSequence = endCommentBlockSequence;
+}
+

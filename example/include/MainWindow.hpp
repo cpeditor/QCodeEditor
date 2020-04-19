@@ -2,6 +2,9 @@
 
 // Qt
 #include <QMainWindow> // Required for inheritance
+#include <QAction>
+#include <QMenu>
+#include <QMenuBar>
 #include <QString>
 #include <QVector>
 #include <QPair>
@@ -57,6 +60,10 @@ private:
     QCheckBox* m_tabReplaceEnabledCheckbox;
     QSpinBox*  m_tabReplaceNumberSpinbox;
     QCheckBox* m_autoIndentationCheckbox;
+
+    QMenu * m_mainMenu;
+    QAction * m_actionToggleComment;
+    QAction * m_actionToggleBlockComment;
 
     QCodeEditor* m_codeEditor;
 

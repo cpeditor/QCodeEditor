@@ -46,6 +46,11 @@ QJSHighlighter::QJSHighlighter(QTextDocument *document)
 
     // Single line
     m_highlightRules.append({QRegularExpression(R"(//[^\n]*)"), "Comment"});
+
+    // Comment sequences for toggling support
+    m_commentLineSequence = "//";
+    m_startCommentBlockSequence = "/*";
+    m_endCommentBlockSequence = "*/";
 }
 
 void QJSHighlighter::highlightBlock(const QString &text)

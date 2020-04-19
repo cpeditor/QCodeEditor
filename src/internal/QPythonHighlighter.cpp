@@ -79,6 +79,11 @@ QPythonHighlighter::QPythonHighlighter(QTextDocument* document) :
          QRegularExpression("(\"\"\")"),
          "String"
      });
+
+    // Comment sequences for toggling support
+    m_commentLineSequence = "#";
+    m_startCommentBlockSequence = "'''";
+    m_endCommentBlockSequence = m_startCommentBlockSequence;
 }
 
 void QPythonHighlighter::highlightBlock(const QString& text)

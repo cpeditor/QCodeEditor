@@ -80,6 +80,11 @@ QLuaHighlighter::QLuaHighlighter(QTextDocument* document) :
          QRegularExpression(R"(\]\])"),
          "String"
      });
+
+    // Comment sequences for toggling support
+    m_commentLineSequence = "--";
+    m_startCommentBlockSequence = "--[[";
+    m_endCommentBlockSequence = "]]";
 }
 
 void QLuaHighlighter::highlightBlock(const QString& text)

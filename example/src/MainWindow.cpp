@@ -152,6 +152,19 @@ void MainWindow::createWidgets()
     m_tabReplaceNumberSpinbox    = new QSpinBox(setupGroup);
     m_autoIndentationCheckbox    = new QCheckBox("Auto Indentation", setupGroup);
 
+    m_actionToggleComment      = new QAction("Toggle comment", this);
+    m_actionToggleBlockComment = new QAction("Toggle block comment", this);
+
+    m_actionToggleComment->setShortcut(QKeySequence("Ctrl+/"));
+    m_actionToggleBlockComment->setShortcut(QKeySequence("Shift+Ctrl+/"));
+
+    connect(m_actionToggleComment, &QAction::triggered, m_codeEditor, &QCodeEditor::toggleComment);
+    connect(m_actionToggleBlockComment, &QAction::triggered, m_codeEditor, &QCodeEditor::toggleBlockComment);
+
+    m_mainMenu = new QMenu("Actions", this);
+    m_mainMenu->addAction(m_actionToggleComment);
+    m_mainMenu->addAction(m_actionToggleBlockComment);
+    menuBar()->addMenu(m_mainMenu);
 
     // Adding widgets
     m_setupLayout->addWidget(new QLabel(tr("Code sample"), setupGroup));

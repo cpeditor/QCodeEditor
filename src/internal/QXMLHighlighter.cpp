@@ -19,6 +19,9 @@ QXMLHighlighter::QXMLHighlighter(QTextDocument* document) :
         << QRegularExpression("<")
         << QRegularExpression("</")
         << QRegularExpression("\\?>");
+
+    m_startCommentBlockSequence = "<!--";
+    m_endCommentBlockSequence = "-->";
 }
 
 void QXMLHighlighter::highlightBlock(const QString& text)

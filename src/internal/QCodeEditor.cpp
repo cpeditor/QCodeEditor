@@ -304,61 +304,59 @@ void QCodeEditor::duplicate()
 
 void QCodeEditor::toggleComment()
 {
-    bool isCpp = dynamic_cast<QCXXHighlighter *>(m_highlighter);
-    bool isJava = dynamic_cast<QJavaHighlighter *>(m_highlighter);
-    bool isPython = dynamic_cast<QPythonHighlighter *>(m_highlighter);
-    if (isCpp || isJava || isPython)
+    if (m_highlighter == nullptr)
+        return;
+    QString comment = m_highlighter->commentLineSequence();
+    if (comment.isEmpty())
+        return;
+
+    if (!removeInEachLineOfSelection(QRegularExpression("^\\s*(" + comment + " ?)"), false))
     {
-        QString comment = isPython ? "#" : "//";
-        if (!removeInEachLineOfSelection(QRegularExpression("^\\s*(" + comment + " ?)"), false))
-        {
-            addInEachLineOfSelection(QRegularExpression("\\S|^\\s*$"), comment + " ");
-        }
+        addInEachLineOfSelection(QRegularExpression("\\S|^\\s*$"), comment + " ");
     }
 }
 
 void QCodeEditor::toggleBlockComment()
 {
-    bool isCpp = dynamic_cast<QCXXHighlighter *>(m_highlighter);
-    bool isJava = dynamic_cast<QJavaHighlighter *>(m_highlighter);
-    bool isJS = dynamic_cast<QJSHighlighter *>(m_highlighter);
-    bool isPython = dynamic_cast<QPythonHighlighter *>(m_highlighter);
-    if (isCpp || isJava || isJS || isPython)
-    {
-        auto cursor = textCursor();
-        int startPos = cursor.selectionStart();
-        int endPos = cursor.selectionEnd();
-        bool cursorAtEnd = cursor.position() == endPos;
-        QString commentStart = isPython ? "\"\"\"" : "/*";
-        QString commentEnd = isPython ? "\"\"\"" : "*/";
-        auto text = cursor.selectedText();
-        int pos1, pos2;
-        if (text.indexOf(commentStart) == 0 && text.length() >= commentStart.length() + commentEnd.length() &&
+    if (m_highlighter == nullptr)
+        return;
+    QString commentStart = m_highlighter->startCommentBlockSequence();
+    QString commentEnd = m_highlighter->endCommentBlockSequence();
+
+    if (commentStart.isEmpty() || commentEnd.isEmpty())
+        return;
+
+    auto cursor = textCursor();
+    int startPos = cursor.selectionStart();
+    int endPos = cursor.selectionEnd();
+    bool cursorAtEnd = cursor.position() == endPos;
+    auto text = cursor.selectedText();
+    int pos1, pos2;
+    if (text.indexOf(commentStart) == 0 && text.length() >= commentStart.length() + commentEnd.length() &&
             text.lastIndexOf(commentEnd) + commentEnd.length() == text.length())
-        {
-            insertPlainText(
-                text.mid(commentStart.length(), text.length() - commentStart.length() - commentEnd.length()));
-            pos1 = startPos;
-            pos2 = endPos - commentStart.length() - commentEnd.length();
-        }
-        else
-        {
-            insertPlainText(commentStart + text + commentEnd);
-            pos1 = startPos;
-            pos2 = endPos + commentStart.length() + commentEnd.length();
-        }
-        if (cursorAtEnd)
-        {
-            cursor.setPosition(pos1);
-            cursor.setPosition(pos2, QTextCursor::KeepAnchor);
-        }
-        else
-        {
-            cursor.setPosition(pos2);
-            cursor.setPosition(pos1, QTextCursor::KeepAnchor);
-        }
-        setTextCursor(cursor);
+    {
+        insertPlainText(
+                    text.mid(commentStart.length(), text.length() - commentStart.length() - commentEnd.length()));
+        pos1 = startPos;
+        pos2 = endPos - commentStart.length() - commentEnd.length();
     }
+    else
+    {
+        insertPlainText(commentStart + text + commentEnd);
+        pos1 = startPos;
+        pos2 = endPos + commentStart.length() + commentEnd.length();
+    }
+    if (cursorAtEnd)
+    {
+        cursor.setPosition(pos1);
+        cursor.setPosition(pos2, QTextCursor::KeepAnchor);
+    }
+    else
+    {
+        cursor.setPosition(pos2);
+        cursor.setPosition(pos1, QTextCursor::KeepAnchor);
+    }
+    setTextCursor(cursor);
 }
 
 void QCodeEditor::highlightParenthesis()

@@ -64,6 +64,11 @@ QGLSLHighlighter::QGLSLHighlighter(QTextDocument* document) :
         QRegularExpression("//[^\n]*"),
         "Comment"
     });
+
+    // Comment sequences for toggling support
+    m_commentLineSequence = "//";
+    m_startCommentBlockSequence = "/*";
+    m_endCommentBlockSequence = "*/";
 }
 
 void QGLSLHighlighter::highlightBlock(const QString& text)
