@@ -56,6 +56,7 @@ void MainWindow::initData()
         {"GLSL", loadCode(":/code_samples/shader.glsl")},
         {"XML",  loadCode(":/code_samples/xml.xml")},
         {"Java",  loadCode(":/code_samples/java.java")},
+        {"JS",  loadCode(":/code_samples/js.js")},
         {"JSON",  loadCode(":/code_samples/json.json")},
         {"LUA",  loadCode(":/code_samples/lua.lua")},
         {"Python",  loadCode(":/code_samples/python.py")}
