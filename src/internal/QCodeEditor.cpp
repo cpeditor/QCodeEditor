@@ -587,6 +587,34 @@ void QCodeEditor::keyPressEvent(QKeyEvent *e)
 
     if (!completerSkip)
     {
+        if ((e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter))
+        {
+            QKeyEvent pureEnter(QEvent::KeyPress, Qt::Key_Enter, Qt::NoModifier);
+            if (e->modifiers() == Qt::ControlModifier)
+            {
+                moveCursor(QTextCursor::EndOfBlock);
+                keyPressEvent(&pureEnter);
+                return;
+            }
+            else if (e->modifiers() == (Qt::ControlModifier | Qt::ShiftModifier))
+            {
+                if (textCursor().blockNumber() == 0)
+                {
+                    moveCursor(QTextCursor::StartOfBlock);
+                    insertPlainText("\n");
+                    moveCursor(QTextCursor::PreviousBlock);
+                    moveCursor(QTextCursor::EndOfBlock);
+                }
+                else
+                {
+                    moveCursor(QTextCursor::PreviousBlock);
+                    moveCursor(QTextCursor::EndOfBlock);
+                    keyPressEvent(&pureEnter);
+                }
+                return;
+            }
+        }
+
         if (e->key() == Qt::Key_Tab && e->modifiers() == Qt::NoModifier)
         {
             if (textCursor().hasSelection())
@@ -622,7 +650,7 @@ void QCodeEditor::keyPressEvent(QKeyEvent *e)
         // Have Qt Edior like behaviour, if {|} and enter is pressed indent the two
         // parenthesis
         if (m_autoIndentation && (e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter) &&
-            charUnderCursor() == '}' && charUnderCursor(-1) == '{')
+            e->modifiers() == Qt::NoModifier && charUnderCursor(-1) == '{' && charUnderCursor() == '}')
         {
             insertPlainText("\n" + indentationSpaces + (m_replaceTab ? m_tabReplace : "\t") + "\n" + indentationSpaces);
 
@@ -634,7 +662,7 @@ void QCodeEditor::keyPressEvent(QKeyEvent *e)
 
         // Auto-indent for single "{" without "}"
         if (m_autoIndentation && (e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter) &&
-            charUnderCursor(-1) == '{')
+            e->modifiers() == Qt::NoModifier && charUnderCursor(-1) == '{')
         {
             insertPlainText("\n" + indentationSpaces + (m_replaceTab ? m_tabReplace : "\t"));
             return;
@@ -715,34 +743,9 @@ void QCodeEditor::keyPressEvent(QKeyEvent *e)
             }
         }
 
-        if ((e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter) && !(e->modifiers() & Qt::AltModifier))
+        if ((e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter) && e->modifiers() == Qt::NoModifier)
         {
-            if (e->modifiers() == Qt::ControlModifier)
-            {
-                moveCursor(QTextCursor::EndOfBlock);
-            }
-            else if (e->modifiers() == (Qt::ControlModifier | Qt::ShiftModifier))
-            {
-                moveCursor(QTextCursor::StartOfBlock);
-                QString insertText = "\n";
-                int blockNumber = textCursor().blockNumber();
-                if (blockNumber > 0)
-                {
-                    insertText.prepend(QRegularExpression("^\\s*")
-                                           .match(document()->findBlockByNumber(blockNumber - 1).text())
-                                           .captured());
-                }
-                insertPlainText(insertText);
-                moveCursor(QTextCursor::PreviousBlock);
-                moveCursor(QTextCursor::EndOfBlock);
-                return;
-            }
-            else
-            {
-                indentationSpaces = indentationSpaces.left(textCursor().columnNumber());
-            }
-
-            insertPlainText("\n" + indentationSpaces);
+            insertPlainText("\n" + indentationSpaces.left(textCursor().columnNumber()));
             return;
         }
 
