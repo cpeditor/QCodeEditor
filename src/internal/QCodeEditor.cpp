@@ -50,6 +50,7 @@ void QCodeEditor::initFont()
 void QCodeEditor::performConnections()
 {
     connect(document(), &QTextDocument::blockCountChanged, this, &QCodeEditor::updateLineNumberAreaWidth);
+    connect(document(), &QTextDocument::blockCountChanged, this, &QCodeEditor::updateBottomMargin);
 
     connect(verticalScrollBar(), &QScrollBar::valueChanged, [this](int) { m_lineNumberArea->update(); });
 
@@ -137,9 +138,16 @@ void QCodeEditor::updateLineGeometry()
 
 void QCodeEditor::updateBottomMargin()
 {
-    auto format = document()->rootFrame()->frameFormat();
-    format.setBottomMargin(qMax(document()->documentMargin(), viewport()->height() - QFontMetricsF(font()).height()));
-    document()->rootFrame()->setFrameFormat(format);
+    auto doc = document();
+    if (doc->blockCount() > 1)
+    {
+        // calling QTextFrame::setFrameFormat with an empty document makes the application crash
+        auto rf = doc->rootFrame();
+        auto format = rf->frameFormat();
+        int margin = doc->documentMargin();
+        format.setBottomMargin(qMax(margin, viewport()->height() - fontMetrics().height()) - margin);
+        rf->setFrameFormat(format);
+    }
 }
 
 void QCodeEditor::updateLineNumberAreaWidth(int)

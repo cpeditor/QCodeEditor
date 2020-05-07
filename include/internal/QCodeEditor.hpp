@@ -262,6 +262,12 @@ class QCodeEditor : public QTextEdit
      */
     bool event(QEvent *e) override;
 
+  private Q_SLOTS:
+    /**
+     * @brief Slot, that updates the bottom margin.
+     */
+    void updateBottomMargin();
+
   private:
     /**
      * @brief Method for initializing default
@@ -279,11 +285,6 @@ class QCodeEditor : public QTextEdit
      * @brief Method for updating geometry of line number area.
      */
     void updateLineGeometry();
-
-    /**
-     * @brief Method for updating the bottom margin.
-     */
-    void updateBottomMargin();
 
     /**
      * @brief Method, that performs completer processing.
