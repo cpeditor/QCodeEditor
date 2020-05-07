@@ -235,6 +235,11 @@ class QCodeEditor : public QTextEdit
     void resizeEvent(QResizeEvent *e) override;
 
     /**
+     * @brief Method, update the bottom margin when the font changes.
+     */
+    void changeEvent(QEvent *e) override;
+
+    /**
      * @brief Method, that's called on any key press, posted
      * into code editor widget. This method is overloaded for:
      *
@@ -274,6 +279,11 @@ class QCodeEditor : public QTextEdit
      * @brief Method for updating geometry of line number area.
      */
     void updateLineGeometry();
+
+    /**
+     * @brief Method for updating the bottom margin.
+     */
+    void updateBottomMargin();
 
     /**
      * @brief Method, that performs completer processing.

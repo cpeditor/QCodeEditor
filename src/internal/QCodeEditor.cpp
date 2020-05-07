@@ -119,12 +119,27 @@ void QCodeEditor::resizeEvent(QResizeEvent *e)
     QTextEdit::resizeEvent(e);
 
     updateLineGeometry();
+    updateBottomMargin();
+}
+
+void QCodeEditor::changeEvent(QEvent *e)
+{
+    QTextEdit::changeEvent(e);
+    if (e->type() == QEvent::FontChange)
+        updateBottomMargin();
 }
 
 void QCodeEditor::updateLineGeometry()
 {
     QRect cr = contentsRect();
     m_lineNumberArea->setGeometry(QRect(cr.left(), cr.top(), m_lineNumberArea->sizeHint().width(), cr.height()));
+}
+
+void QCodeEditor::updateBottomMargin()
+{
+    auto format = document()->rootFrame()->frameFormat();
+    format.setBottomMargin(qMax(document()->documentMargin(), viewport()->height() - QFontMetricsF(font()).height()));
+    document()->rootFrame()->setFrameFormat(format);
 }
 
 void QCodeEditor::updateLineNumberAreaWidth(int)
@@ -818,7 +833,7 @@ bool QCodeEditor::tabReplace() const
 void QCodeEditor::setTabReplaceSize(int val)
 {
     m_tabReplace.fill(' ', val);
-    setTabStopDistance(QFontMetrics(font()).horizontalAdvance(QString(val * 1000, ' ')) / 1000.0);
+    setTabStopDistance(fontMetrics().horizontalAdvance(QString(val * 1000, ' ')) / 1000.0);
 }
 
 int QCodeEditor::tabReplaceSize() const
