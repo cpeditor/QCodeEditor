@@ -106,6 +106,11 @@ class QCodeEditor : public QTextEdit
     void setAutoRemoveParentheses(bool enabled);
 
     /**
+     * @brief Method for setting extra bottom margin enabled.
+     */
+    void setExtraBottomMargin(bool enabled);
+
+    /**
      * @brief Method for getting is auto indentation enabled.
      * Default: true
      */
@@ -368,6 +373,7 @@ class QCodeEditor : public QTextEdit
     bool m_autoParentheses;
     bool m_replaceTab;
     bool m_autoRemoveParentheses;
+    bool m_extraBottomMargin;
     QString m_tabReplace;
 
     QList<QTextEdit::ExtraSelection> extra1, extra2, extra_squiggles;

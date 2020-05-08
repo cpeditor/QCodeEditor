@@ -29,7 +29,8 @@ static QVector<QPair<QString, QString>> parentheses = {{"(", ")"}, {"{", "}"}, {
 QCodeEditor::QCodeEditor(QWidget *widget)
     : QTextEdit(widget), m_highlighter(nullptr), m_syntaxStyle(nullptr), m_lineNumberArea(new QLineNumberArea(this)),
       m_completer(nullptr), m_autoIndentation(true), m_autoParentheses(true), m_replaceTab(true),
-      m_autoRemoveParentheses(true), m_tabReplace(QString(4, ' ')), extra1(), extra2(), extra_squiggles(), m_squiggler()
+      m_autoRemoveParentheses(true), m_extraBottomMargin(true), m_tabReplace(QString(4, ' ')), extra1(), extra2(),
+      extra_squiggles(), m_squiggler()
 {
     initFont();
     performConnections();
@@ -144,9 +145,15 @@ void QCodeEditor::updateBottomMargin()
         // calling QTextFrame::setFrameFormat with an empty document makes the application crash
         auto rf = doc->rootFrame();
         auto format = rf->frameFormat();
-        int margin = doc->documentMargin();
-        format.setBottomMargin(qMax(margin, viewport()->height() - fontMetrics().height()) - margin);
-        rf->setFrameFormat(format);
+        int documentMargin = doc->documentMargin();
+        int bottomMargin = m_extraBottomMargin
+                               ? qMax(documentMargin, viewport()->height() - fontMetrics().height()) - documentMargin
+                               : documentMargin;
+        if (format.bottomMargin() != bottomMargin)
+        {
+            format.setBottomMargin(bottomMargin);
+            rf->setFrameFormat(format);
+        }
     }
 }
 
@@ -811,6 +818,12 @@ void QCodeEditor::setAutoIndentation(bool enabled)
 void QCodeEditor::setAutoRemoveParentheses(bool enabled)
 {
     m_autoRemoveParentheses = enabled;
+}
+
+void QCodeEditor::setExtraBottomMargin(bool enabled)
+{
+    m_extraBottomMargin = enabled;
+    updateBottomMargin();
 }
 
 bool QCodeEditor::autoIndentation() const
