@@ -610,7 +610,7 @@ void QCodeEditor::keyPressEvent(QKeyEvent *e)
 
     if (!completerSkip)
     {
-        if ((e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter))
+        if ((e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter) && e->modifiers() != Qt::NoModifier)
         {
             QKeyEvent pureEnter(QEvent::KeyPress, Qt::Key_Enter, Qt::NoModifier);
             if (e->modifiers() == Qt::ControlModifier)
@@ -634,6 +634,11 @@ void QCodeEditor::keyPressEvent(QKeyEvent *e)
                     moveCursor(QTextCursor::EndOfBlock);
                     keyPressEvent(&pureEnter);
                 }
+                return;
+            }
+            else if (e->modifiers() == Qt::ShiftModifier)
+            {
+                keyPressEvent(&pureEnter);
                 return;
             }
         }
