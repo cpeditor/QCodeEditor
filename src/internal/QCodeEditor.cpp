@@ -251,7 +251,7 @@ void QCodeEditor::deleteLine()
     int lineStart = cursor.blockNumber();
     cursor.setPosition(selectionEnd);
     int lineEnd = cursor.blockNumber();
-    moveCursor(QTextCursor::MoveOperation::PreviousBlock);
+    int columnNumber = textCursor().columnNumber();
     cursor.movePosition(QTextCursor::Start);
     if (lineEnd == document()->blockCount() - 1)
     {
@@ -271,7 +271,11 @@ void QCodeEditor::deleteLine()
         cursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, lineStart);
         cursor.movePosition(QTextCursor::NextBlock, QTextCursor::KeepAnchor, lineEnd - lineStart + 1);
     }
-    cursor.insertText("");
+    cursor.removeSelectedText();
+    cursor.movePosition(QTextCursor::StartOfBlock);
+    cursor.movePosition(QTextCursor::NextCharacter, QTextCursor::MoveAnchor,
+                        qMin(columnNumber, cursor.block().text().length()));
+    setTextCursor(cursor);
 }
 
 void QCodeEditor::duplicate()
@@ -680,7 +684,7 @@ void QCodeEditor::keyPressEvent(QKeyEvent *e)
                     auto cursor = textCursor();
                     cursor.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor);
                     cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 2);
-                    cursor.insertText("");
+                    cursor.removeSelectedText();
                     return;
                 }
             }
@@ -706,7 +710,7 @@ void QCodeEditor::keyPressEvent(QKeyEvent *e)
                 }
                 cursor.movePosition(QTextCursor::PreviousCharacter, QTextCursor::KeepAnchor,
                                     cursor.columnNumber() - newIndentLength);
-                cursor.insertText("");
+                cursor.removeSelectedText();
                 return;
             }
         }
