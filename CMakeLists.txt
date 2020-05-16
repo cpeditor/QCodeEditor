@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.6)
 project(QCodeEditor)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 
 option(BUILD_EXAMPLE "Example building required" Off)
 
@@ -13,6 +13,8 @@ endif()
 set(RESOURCES_FILE
     resources/qcodeeditor_resources.qrc
 )
+
+add_subdirectory(third_party/FakeVim)
 
 set(INCLUDE_FILES
     include/QHighlightRule
@@ -106,8 +108,10 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 	)
 endif(CMAKE_COMPILER_IS_GNUCXX)
 
+include_directories("third_party/FakeVim/fakevim")
 target_link_libraries(QCodeEditor
     Qt5::Core
     Qt5::Widgets
     Qt5::Gui
+    fakevim
 )
