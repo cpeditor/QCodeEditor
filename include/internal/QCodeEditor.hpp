@@ -34,7 +34,8 @@ class QCodeEditor : public QTextEdit
         QChar left, right;
         bool autoComplete, autoRemove, tabJumpOut;
 
-        Parentheses(const QChar &l, const QChar &r, bool complete = true, bool remove = true, bool jumpout = true)
+        Parentheses(const QChar &l = '(', const QChar &r = ')', bool complete = true, bool remove = true,
+                    bool jumpout = true)
             : left(l), right(r), autoComplete(complete), autoRemove(remove), tabJumpOut(jumpout)
         {
         }
