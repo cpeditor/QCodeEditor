@@ -34,7 +34,6 @@ MainWindow::MainWindow(QWidget* parent) :
     m_styleCombobox(nullptr),
     m_readOnlyCheckBox(nullptr),
     m_wordWrapCheckBox(nullptr),
-    m_parenthesesEnabledCheckbox(nullptr),
     m_tabReplaceEnabledCheckbox(nullptr),
     m_tabReplaceNumberSpinbox(nullptr),
     m_autoIndentationCheckbox(nullptr),
@@ -147,7 +146,6 @@ void MainWindow::createWidgets()
 
     m_readOnlyCheckBox           = new QCheckBox("Read Only", setupGroup);
     m_wordWrapCheckBox           = new QCheckBox("Word Wrap", setupGroup);
-    m_parenthesesEnabledCheckbox = new QCheckBox("Auto Parentheses", setupGroup);
     m_tabReplaceEnabledCheckbox  = new QCheckBox("Tab Replace", setupGroup);
     m_tabReplaceNumberSpinbox    = new QSpinBox(setupGroup);
     m_autoIndentationCheckbox    = new QCheckBox("Auto Indentation", setupGroup);
@@ -177,7 +175,6 @@ void MainWindow::createWidgets()
     m_setupLayout->addWidget(m_styleCombobox);
     m_setupLayout->addWidget(m_readOnlyCheckBox);
     m_setupLayout->addWidget(m_wordWrapCheckBox);
-    m_setupLayout->addWidget(m_parenthesesEnabledCheckbox);
     m_setupLayout->addWidget(m_tabReplaceEnabledCheckbox);
     m_setupLayout->addWidget(m_tabReplaceNumberSpinbox);
     m_setupLayout->addWidget(m_autoIndentationCheckbox);
@@ -237,7 +234,6 @@ void MainWindow::setupWidgets()
     m_styleCombobox->addItems(list);
     list.clear();
 
-    m_parenthesesEnabledCheckbox->setChecked(m_codeEditor->autoParentheses());
     m_tabReplaceEnabledCheckbox->setChecked(m_codeEditor->tabReplace());
     m_tabReplaceNumberSpinbox->setValue(m_codeEditor->tabReplaceSize());
     m_tabReplaceNumberSpinbox->setSuffix(tr(" spaces"));
@@ -298,13 +294,6 @@ void MainWindow::performConnections()
                 m_codeEditor->setWordWrapMode(QTextOption::NoWrap);
             }
         }
-    );
-
-    connect(
-        m_parenthesesEnabledCheckbox,
-        &QCheckBox::stateChanged,
-        [this](int state)
-        { m_codeEditor->setAutoParentheses(state != 0); }
     );
 
     connect(
