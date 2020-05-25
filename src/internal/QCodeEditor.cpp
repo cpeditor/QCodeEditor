@@ -704,6 +704,7 @@ void QCodeEditor::keyPressEvent(QKeyEvent *e)
             e->modifiers() == Qt::NoModifier && charUnderCursor(-1) == '{')
         {
             insertPlainText("\n" + indentationSpaces + (m_replaceTab ? m_tabReplace : "\t"));
+            setTextCursor(textCursor()); // scroll to the cursor
             return;
         }
 
@@ -720,6 +721,7 @@ void QCodeEditor::keyPressEvent(QKeyEvent *e)
                     cursor.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor);
                     cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 2);
                     cursor.removeSelectedText();
+                    setTextCursor(textCursor()); // scroll to the cursor
                     return;
                 }
             }
@@ -746,6 +748,7 @@ void QCodeEditor::keyPressEvent(QKeyEvent *e)
                 cursor.movePosition(QTextCursor::PreviousCharacter, QTextCursor::KeepAnchor,
                                     cursor.columnNumber() - newIndentLength);
                 cursor.removeSelectedText();
+                setTextCursor(textCursor()); // scroll to the cursor
                 return;
             }
         }
@@ -785,6 +788,7 @@ void QCodeEditor::keyPressEvent(QKeyEvent *e)
         if ((e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter) && e->modifiers() == Qt::NoModifier)
         {
             insertPlainText("\n" + indentationSpaces.left(textCursor().columnNumber()));
+            setTextCursor(textCursor()); // scroll to the cursor
             return;
         }
 
