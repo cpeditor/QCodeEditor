@@ -831,7 +831,7 @@ void QCodeEditor::setAutoIndentation(bool enabled)
     m_autoIndentation = enabled;
 }
 
-void QCodeEditor::setParentheses(const QVector<Parentheses> &parentheses)
+void QCodeEditor::setParentheses(const QVector<Parenthesis> &parentheses)
 {
     m_parentheses = parentheses;
 }

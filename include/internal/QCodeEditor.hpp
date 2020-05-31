@@ -29,12 +29,12 @@ class QCodeEditor : public QTextEdit
         Error
     };
 
-    struct Parentheses
+    struct Parenthesis
     {
         QChar left, right;
         bool autoComplete, autoRemove, tabJumpOut;
 
-        Parentheses(const QChar &l = '(', const QChar &r = ')', bool complete = true, bool remove = true,
+        Parenthesis(const QChar &l = '(', const QChar &r = ')', bool complete = true, bool remove = true,
                     bool jumpout = true)
             : left(l), right(r), autoComplete(complete), autoRemove(remove), tabJumpOut(jumpout)
         {
@@ -104,7 +104,7 @@ class QCodeEditor : public QTextEdit
     /**
      * @brief Method for setting the parentheses.
      */
-    void setParentheses(const QVector<Parentheses> &parentheses);
+    void setParentheses(const QVector<Parenthesis> &parentheses);
 
     /**
      * @brief Method for setting extra bottom margin enabled.
@@ -379,5 +379,5 @@ class QCodeEditor : public QTextEdit
 
     QVector<SquiggleInformation> m_squiggler;
 
-    QVector<Parentheses> m_parentheses;
+    QVector<Parenthesis> m_parentheses;
 };
