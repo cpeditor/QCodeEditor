@@ -1072,7 +1072,11 @@ bool QCodeEditor::removeInEachLineOfSelection(const QRegularExpression &regex, b
         deleteTotal += len;
         stream << line.remove(line.indexOf(match), len);
         if (i != lineEnd)
+#if QT_VERSION >= 0x50E00
+            stream << Qt::endl;
+#else
             stream << endl;
+#endif
     }
     cursor.movePosition(QTextCursor::Start);
     cursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, lineStart);
@@ -1125,7 +1129,11 @@ void QCodeEditor::addInEachLineOfSelection(const QRegularExpression &regex, cons
         auto line = lines[i];
         stream << line.insert(line.indexOf(regex), str);
         if (i != lineEnd)
+#if QT_VERSION >= 0x50E00
+            stream << Qt::endl;
+#else
             stream << endl;
+#endif
     }
     cursor.movePosition(QTextCursor::Start);
     cursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, lineStart);
