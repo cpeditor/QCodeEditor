@@ -56,7 +56,6 @@ private:
 
     QCheckBox* m_readOnlyCheckBox;
     QCheckBox* m_wordWrapCheckBox;
-    QCheckBox* m_parenthesesEnabledCheckbox;
     QCheckBox* m_tabReplaceEnabledCheckbox;
     QSpinBox*  m_tabReplaceNumberSpinbox;
     QCheckBox* m_autoIndentationCheckbox;

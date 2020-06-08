@@ -24,13 +24,11 @@
 #include <QTextStream>
 #include <QToolTip>
 
-static QVector<QPair<QString, QString>> parentheses = {{"(", ")"}, {"{", "}"}, {"[", "]"}, {"\"", "\""}, {"'", "'"}};
-
 QCodeEditor::QCodeEditor(QWidget *widget)
     : QTextEdit(widget), m_highlighter(nullptr), m_syntaxStyle(nullptr), m_lineNumberArea(new QLineNumberArea(this)),
-      m_completer(nullptr), m_autoIndentation(true), m_autoParentheses(true), m_replaceTab(true),
-      m_autoRemoveParentheses(true), m_extraBottomMargin(true), m_tabReplace(QString(4, ' ')), extra1(), extra2(),
-      extra_squiggles(), m_squiggler()
+      m_completer(nullptr), m_autoIndentation(true), m_replaceTab(true), m_extraBottomMargin(true),
+      m_tabReplace(QString(4, ' ')), extra1(), extra2(), extra_squiggles(), m_squiggler(),
+      m_parentheses({{'(', ')'}, {'{', '}'}, {'[', ']'}, {'\"', '\"'}, {'\'', '\''}})
 {
     initFont();
     performConnections();
@@ -400,7 +398,7 @@ void QCodeEditor::highlightParenthesis()
     auto currentSymbol = charUnderCursor();
     auto prevSymbol = charUnderCursor(-1);
 
-    for (auto &pair : parentheses)
+    for (auto &p : m_parentheses)
     {
         int direction;
 
@@ -408,16 +406,16 @@ void QCodeEditor::highlightParenthesis()
         QChar activeSymbol;
         auto position = textCursor().position();
 
-        if (pair.first == currentSymbol)
+        if (p.left == currentSymbol)
         {
             direction = 1;
-            counterSymbol = pair.second[0];
+            counterSymbol = p.right;
             activeSymbol = currentSymbol;
         }
-        else if (pair.second == prevSymbol)
+        else if (p.right == prevSymbol)
         {
             direction = -1;
-            counterSymbol = pair.first[0];
+            counterSymbol = p.left;
             activeSymbol = prevSymbol;
             position--;
         }
@@ -661,7 +659,18 @@ void QCodeEditor::keyPressEvent(QKeyEvent *e)
                 indent();
                 return;
             }
-            else if (m_replaceTab)
+
+            auto c = charUnderCursor();
+            for (auto p : m_parentheses)
+            {
+                if (p.tabJumpOut && c == p.right)
+                {
+                    moveCursor(QTextCursor::NextCharacter);
+                    return;
+                }
+            }
+
+            if (m_replaceTab)
             {
                 insertPlainText(m_tabReplace);
                 return;
@@ -704,22 +713,23 @@ void QCodeEditor::keyPressEvent(QKeyEvent *e)
             e->modifiers() == Qt::NoModifier && charUnderCursor(-1) == '{')
         {
             insertPlainText("\n" + indentationSpaces + (m_replaceTab ? m_tabReplace : "\t"));
+            setTextCursor(textCursor()); // scroll to the cursor
             return;
         }
 
-        if (m_autoRemoveParentheses && e->key() == Qt::Key_Backspace && e->modifiers() == Qt::NoModifier &&
-            !textCursor().hasSelection())
+        if (e->key() == Qt::Key_Backspace && e->modifiers() == Qt::NoModifier && !textCursor().hasSelection())
         {
             auto pre = charUnderCursor(-1);
             auto nxt = charUnderCursor();
-            for (auto p : parentheses)
+            for (auto p : m_parentheses)
             {
-                if (p.first == pre && p.second == nxt)
+                if (p.autoRemove && p.left == pre && p.right == nxt)
                 {
                     auto cursor = textCursor();
                     cursor.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor);
                     cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 2);
                     cursor.removeSelectedText();
+                    setTextCursor(textCursor()); // scroll to the cursor
                     return;
                 }
             }
@@ -746,24 +756,25 @@ void QCodeEditor::keyPressEvent(QKeyEvent *e)
                 cursor.movePosition(QTextCursor::PreviousCharacter, QTextCursor::KeepAnchor,
                                     cursor.columnNumber() - newIndentLength);
                 cursor.removeSelectedText();
+                setTextCursor(textCursor()); // scroll to the cursor
                 return;
             }
         }
 
-        if (m_autoParentheses)
+        for (auto p : m_parentheses)
         {
-            for (auto &&el : parentheses)
+            if (p.autoComplete)
             {
-                // Add parentheses for selection
-                if (el.first == e->text())
+                auto cursor = textCursor();
+                if (cursor.hasSelection())
                 {
-                    auto cursor = textCursor();
-                    if (cursor.hasSelection())
+                    if (p.left == e->text())
                     {
+                        // Add parentheses for selection
                         int startPos = cursor.selectionStart();
                         int endPos = cursor.selectionEnd();
                         bool cursorAtEnd = cursor.position() == endPos;
-                        auto text = el.first + cursor.selectedText() + el.second;
+                        auto text = p.left + cursor.selectedText() + p.right;
                         insertPlainText(text);
                         if (cursorAtEnd)
                         {
@@ -779,38 +790,34 @@ void QCodeEditor::keyPressEvent(QKeyEvent *e)
                         return;
                     }
                 }
+                else
+                {
+                    if (p.right == e->text())
+                    {
+                        auto symbol = charUnderCursor();
+
+                        if (symbol == p.right)
+                        {
+                            moveCursor(QTextCursor::NextCharacter);
+                            return;
+                        }
+                    }
+
+                    if (p.left == e->text())
+                    {
+                        insertPlainText(QString(p.left) + p.right);
+                        moveCursor(QTextCursor::PreviousCharacter);
+                        return;
+                    }
+                }
             }
         }
 
         if ((e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter) && e->modifiers() == Qt::NoModifier)
         {
             insertPlainText("\n" + indentationSpaces.left(textCursor().columnNumber()));
+            setTextCursor(textCursor()); // scroll to the cursor
             return;
-        }
-
-        if (m_autoParentheses)
-        {
-            for (auto &&el : parentheses)
-            {
-                // If it's close brace - check parentheses
-                if (el.second == e->text())
-                {
-                    auto symbol = charUnderCursor();
-
-                    if (symbol == el.second)
-                    {
-                        moveCursor(QTextCursor::MoveOperation::Right);
-                        return;
-                    }
-                }
-                // Inserting closed brace
-                if (el.first == e->text())
-                {
-                    insertPlainText(el.first + el.second);
-                    moveCursor(QTextCursor::MoveOperation::Left);
-                    return;
-                }
-            }
         }
 
         QTextEdit::keyPressEvent(e);
@@ -824,9 +831,9 @@ void QCodeEditor::setAutoIndentation(bool enabled)
     m_autoIndentation = enabled;
 }
 
-void QCodeEditor::setAutoRemoveParentheses(bool enabled)
+void QCodeEditor::setParentheses(const QVector<Parenthesis> &parentheses)
 {
-    m_autoRemoveParentheses = enabled;
+    m_parentheses = parentheses;
 }
 
 void QCodeEditor::setExtraBottomMargin(bool enabled)
@@ -838,16 +845,6 @@ void QCodeEditor::setExtraBottomMargin(bool enabled)
 bool QCodeEditor::autoIndentation() const
 {
     return m_autoIndentation;
-}
-
-void QCodeEditor::setAutoParentheses(bool enabled)
-{
-    m_autoParentheses = enabled;
-}
-
-bool QCodeEditor::autoParentheses() const
-{
-    return m_autoParentheses;
 }
 
 void QCodeEditor::setTabReplace(bool enabled)
@@ -1075,7 +1072,11 @@ bool QCodeEditor::removeInEachLineOfSelection(const QRegularExpression &regex, b
         deleteTotal += len;
         stream << line.remove(line.indexOf(match), len);
         if (i != lineEnd)
+#if QT_VERSION >= 0x50E00
+            stream << Qt::endl;
+#else
             stream << endl;
+#endif
     }
     cursor.movePosition(QTextCursor::Start);
     cursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, lineStart);
@@ -1128,7 +1129,11 @@ void QCodeEditor::addInEachLineOfSelection(const QRegularExpression &regex, cons
         auto line = lines[i];
         stream << line.insert(line.indexOf(regex), str);
         if (i != lineEnd)
+#if QT_VERSION >= 0x50E00
+            stream << Qt::endl;
+#else
             stream << endl;
+#endif
     }
     cursor.movePosition(QTextCursor::Start);
     cursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, lineStart);

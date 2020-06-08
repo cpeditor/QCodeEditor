@@ -29,6 +29,18 @@ class QCodeEditor : public QTextEdit
         Error
     };
 
+    struct Parenthesis
+    {
+        QChar left, right;
+        bool autoComplete, autoRemove, tabJumpOut;
+
+        Parenthesis(const QChar &l = '(', const QChar &r = ')', bool complete = true, bool remove = true,
+                    bool jumpout = true)
+            : left(l), right(r), autoComplete(complete), autoRemove(remove), tabJumpOut(jumpout)
+        {
+        }
+    };
+
     /**
      * @brief Constructor.
      * @param widget Pointer to parent widget.
@@ -57,17 +69,6 @@ class QCodeEditor : public QTextEdit
      * @param style Pointer to syntax style.
      */
     void setSyntaxStyle(QSyntaxStyle *style);
-
-    /**
-     * @brief Method setting auto parentheses enabled.
-     */
-    void setAutoParentheses(bool enabled);
-
-    /**
-     * @brief Method for getting is auto parentheses enabled.
-     * Default value: true
-     */
-    bool autoParentheses() const;
 
     /**
      * @brief Method for setting tab replacing
@@ -101,9 +102,9 @@ class QCodeEditor : public QTextEdit
     void setAutoIndentation(bool enabled);
 
     /**
-     * @brief Method for setting auto remove parenthesis enabled.
+     * @brief Method for setting the parentheses.
      */
-    void setAutoRemoveParentheses(bool enabled);
+    void setParentheses(const QVector<Parenthesis> &parentheses);
 
     /**
      * @brief Method for setting extra bottom margin enabled.
@@ -370,13 +371,13 @@ class QCodeEditor : public QTextEdit
     QCompleter *m_completer;
 
     bool m_autoIndentation;
-    bool m_autoParentheses;
     bool m_replaceTab;
-    bool m_autoRemoveParentheses;
     bool m_extraBottomMargin;
     QString m_tabReplace;
 
     QList<QTextEdit::ExtraSelection> extra1, extra2, extra_squiggles;
 
     QVector<SquiggleInformation> m_squiggler;
+
+    QVector<Parenthesis> m_parentheses;
 };
