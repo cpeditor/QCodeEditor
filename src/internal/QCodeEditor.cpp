@@ -809,7 +809,8 @@ void QCodeEditor::keyPressEvent(QKeyEvent *e)
             }
         }
 
-        if(e->key() == Qt::Key_BraceRight && !textCursor().hasSelection()) {
+        if (m_autoIndentation && e->key() == Qt::Key_BraceRight && !textCursor().hasSelection())
+        {
             unindent();
             insertPlainText("}");
             setTextCursor(textCursor());
