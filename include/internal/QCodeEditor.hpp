@@ -102,6 +102,11 @@ class QCodeEditor : public QTextEdit
     void setAutoIndentation(bool enabled);
 
     /**
+     * @brief Method for setting indentation guide enabled.
+     */
+    void setIndentationGuide(bool enabled);
+
+    /**
      * @brief Method for setting the parentheses.
      */
     void setParentheses(const QVector<Parenthesis> &parentheses);
@@ -360,6 +365,12 @@ class QCodeEditor : public QTextEdit
     void addInEachLineOfSelection(const QRegularExpression &regex, const QString &str);
 
     /**
+     * @brief Method, that paints the
+     * indentation guide if enabled.
+     */
+    void paintIndentationGuide();
+
+    /**
      * @brief The SquiggleInformation struct, Line number will be index of vector+1;
      */
     struct SquiggleInformation
@@ -382,6 +393,7 @@ class QCodeEditor : public QTextEdit
     QCompleter *m_completer;
 
     bool m_autoIndentation;
+    bool m_indentationGuide;
     bool m_replaceTab;
     bool m_extraBottomMargin;
     QString m_tabReplace;
