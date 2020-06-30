@@ -143,6 +143,12 @@ class QCodeEditor : public QTextEdit
      */
     void clearSquiggle();
 
+  Q_SIGNALS:
+    /**
+     * @brief Signal, the font is changed by the wheel event.
+     */
+    void fontChanged(const QFont &newFont);
+
   public Q_SLOTS:
 
     /**
@@ -244,6 +250,11 @@ class QCodeEditor : public QTextEdit
      * @brief Method, update the bottom margin when the font changes.
      */
     void changeEvent(QEvent *e) override;
+
+    /**
+     * @brief Method, update the font size when the wheel is rotated with Ctrl pressed
+     */
+    void wheelEvent(QWheelEvent *e) override;
 
     /**
      * @brief Method, that's called on any key press, posted

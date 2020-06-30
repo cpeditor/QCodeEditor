@@ -125,6 +125,33 @@ void QCodeEditor::changeEvent(QEvent *e)
         updateBottomMargin();
 }
 
+void QCodeEditor::wheelEvent(QWheelEvent *e)
+{
+    if (e->modifiers() == Qt::ControlModifier)
+    {
+        const auto sizes = QFontDatabase::standardSizes();
+        if (sizes.isEmpty())
+        {
+            qDebug() << "QFontDatabase::standardSizes() is empty";
+            return;
+        }
+        int newSize = font().pointSize();
+        if (e->angleDelta().y() > 0)
+            newSize = qMin(newSize + 1, sizes.last());
+        else if (e->angleDelta().y() < 0)
+            newSize = qMax(newSize - 1, sizes.first());
+        if (newSize != font().pointSize())
+        {
+            QFont newFont = font();
+            newFont.setPointSize(newSize);
+            setFont(newFont);
+            emit fontChanged(newFont);
+        }
+    }
+    else
+        QTextEdit::wheelEvent(e);
+}
+
 void QCodeEditor::updateLineGeometry()
 {
     QRect cr = contentsRect();
