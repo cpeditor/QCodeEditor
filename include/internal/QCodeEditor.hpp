@@ -4,7 +4,6 @@
 #include <QTextEdit> // Required for inheritance
 
 class QCompleter;
-class QLineNumberArea;
 class QSyntaxStyle;
 class QStyleSyntaxHighlighter;
 class QFramedTextAttribute;
@@ -157,20 +156,6 @@ class QCodeEditor : public QTextEdit
      * @param s Data.
      */
     void insertCompletion(QString s);
-
-    /**
-     * @brief Slot, that performs update of
-     * internal editor viewport based on line
-     * number area width.
-     */
-    void updateLineNumberAreaWidth(int);
-
-    /**
-     * @brief Slot, that performs update of some
-     * part of line number area.
-     * @param rect Area that has to be updated.
-     */
-    void updateLineNumberArea(const QRect &rect);
 
     /**
      * @brief Slot, that will proceed extra selection
@@ -378,7 +363,6 @@ class QCodeEditor : public QTextEdit
 
     QStyleSyntaxHighlighter *m_highlighter;
     QSyntaxStyle *m_syntaxStyle;
-    QLineNumberArea *m_lineNumberArea;
     QCompleter *m_completer;
 
     bool m_autoIndentation;

@@ -3,7 +3,6 @@
 #include <QCodeEditor>
 #include <QJSHighlighter>
 #include <QJavaHighlighter>
-#include <QLineNumberArea>
 #include <QPythonHighlighter>
 #include <QStyleSyntaxHighlighter>
 #include <QSyntaxStyle>
@@ -25,10 +24,9 @@
 #include <QToolTip>
 
 QCodeEditor::QCodeEditor(QWidget *widget)
-    : QTextEdit(widget), m_highlighter(nullptr), m_syntaxStyle(nullptr), m_lineNumberArea(new QLineNumberArea(this)),
-      m_completer(nullptr), m_autoIndentation(true), m_replaceTab(true), m_extraBottomMargin(true),
-      m_tabReplace(QString(4, ' ')), extra1(), extra2(), extra_squiggles(), m_squiggler(),
-      m_parentheses({{'(', ')'}, {'{', '}'}, {'[', ']'}, {'\"', '\"'}, {'\'', '\''}})
+    : QTextEdit(widget), m_highlighter(nullptr), m_syntaxStyle(nullptr), m_completer(nullptr), m_autoIndentation(true),
+      m_replaceTab(true), m_extraBottomMargin(true), m_tabReplace(QString(4, ' ')), extra1(), extra2(),
+      extra_squiggles(), m_squiggler(), m_parentheses({{'(', ')'}, {'{', '}'}, {'[', ']'}, {'\"', '\"'}, {'\'', '\''}})
 {
     initFont();
     performConnections();
@@ -48,10 +46,7 @@ void QCodeEditor::initFont()
 
 void QCodeEditor::performConnections()
 {
-    connect(document(), &QTextDocument::blockCountChanged, this, &QCodeEditor::updateLineNumberAreaWidth);
     connect(document(), &QTextDocument::blockCountChanged, this, &QCodeEditor::updateBottomMargin);
-
-    connect(verticalScrollBar(), &QScrollBar::valueChanged, [this](int) { m_lineNumberArea->update(); });
 
     connect(this, &QTextEdit::cursorPositionChanged, this, &QCodeEditor::updateExtraSelection1);
     connect(this, &QTextEdit::selectionChanged, this, &QCodeEditor::updateExtraSelection2);
@@ -76,8 +71,6 @@ void QCodeEditor::setHighlighter(QStyleSyntaxHighlighter *highlighter)
 void QCodeEditor::setSyntaxStyle(QSyntaxStyle *style)
 {
     m_syntaxStyle = style;
-
-    m_lineNumberArea->setSyntaxStyle(m_syntaxStyle);
 
     if (m_highlighter)
     {
@@ -155,7 +148,6 @@ void QCodeEditor::wheelEvent(QWheelEvent *e)
 void QCodeEditor::updateLineGeometry()
 {
     QRect cr = contentsRect();
-    m_lineNumberArea->setGeometry(QRect(cr.left(), cr.top(), m_lineNumberArea->sizeHint().width(), cr.height()));
 }
 
 void QCodeEditor::updateBottomMargin()
@@ -175,22 +167,6 @@ void QCodeEditor::updateBottomMargin()
             format.setBottomMargin(bottomMargin);
             rf->setFrameFormat(format);
         }
-    }
-}
-
-void QCodeEditor::updateLineNumberAreaWidth(int)
-{
-    setViewportMargins(m_lineNumberArea->sizeHint().width(), 0, 0, 0);
-}
-
-void QCodeEditor::updateLineNumberArea(const QRect &rect)
-{
-    m_lineNumberArea->update(0, rect.y(), m_lineNumberArea->sizeHint().width(), rect.height());
-    updateLineGeometry();
-
-    if (rect.contains(viewport()->rect()))
-    {
-        updateLineNumberAreaWidth(0);
     }
 }
 
@@ -542,7 +518,6 @@ void QCodeEditor::highlightOccurrences()
 
 void QCodeEditor::paintEvent(QPaintEvent *e)
 {
-    updateLineNumberArea(e->rect());
     QTextEdit::paintEvent(e);
 }
 
@@ -927,7 +902,6 @@ bool QCodeEditor::event(QEvent *event)
     {
         auto *helpEvent = dynamic_cast<QHelpEvent *>(event);
         auto point = helpEvent->pos();
-        point.setX(point.x() - m_lineNumberArea->geometry().right());
         QTextCursor cursor = cursorForPosition(point);
 
         auto lineNumber = cursor.blockNumber() + 1;
@@ -1023,8 +997,6 @@ void QCodeEditor::squiggle(SeverityLevel level, QPair<int, int> start, QPair<int
 
     extra_squiggles.push_back({cursor, newcharfmt});
 
-    m_lineNumberArea->lint(level, start.first, stop.first);
-
     setExtraSelections(extra1 + extra2 + extra_squiggles);
 }
 
@@ -1035,8 +1007,6 @@ void QCodeEditor::clearSquiggle()
 
     m_squiggler.clear();
     extra_squiggles.clear();
-
-    m_lineNumberArea->clearLint();
 
     setExtraSelections(extra1 + extra2);
 }
