@@ -17,7 +17,7 @@ class QLineNumberArea : public QWidget
   public:
     /**
      * @brief Constructor.
-     * @param parent Pointer to parent QTextEdit widget.
+     * @param parent Pointer to parent QPlainTextEdit widget.
      */
     explicit QLineNumberArea(QCodeEditor *parent = nullptr);
 

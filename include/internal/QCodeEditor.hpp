@@ -1,7 +1,8 @@
 #pragma once
 
 // Qt
-#include <QTextEdit> // Required for inheritance
+#include <QPlainTextEdit> // Required for inheritance
+#include <QTextEdit>
 
 class QCompleter;
 class QLineNumberArea;
@@ -12,7 +13,7 @@ class QFramedTextAttribute;
 /**
  * @brief Class, that describes code editor.
  */
-class QCodeEditor : public QTextEdit
+class QCodeEditor : public QPlainTextEdit
 {
     Q_OBJECT
 

@@ -9,7 +9,6 @@
 #include <QPainter>
 #include <QScrollBar>
 #include <QTextBlock>
-#include <QTextEdit>
 
 QLineNumberArea::QLineNumberArea(QCodeEditor *parent)
     : QWidget(parent), m_syntaxStyle(nullptr), m_codeEditParent(parent), m_squiggles()
