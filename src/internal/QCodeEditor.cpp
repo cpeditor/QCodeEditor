@@ -101,9 +101,7 @@ void QCodeEditor::updateStyle()
         QString selectionBackground = m_syntaxStyle->getFormat("Selection").background().color().name();
 
         setStyleSheet(QString("QTextEdit { background-color: %1; selection-background-color: %2; color: %3; }")
-                          .arg(backgroundColor)
-                          .arg(selectionBackground)
-                          .arg(textColor));
+                          .arg(backgroundColor, selectionBackground, textColor));
     }
 
     updateExtraSelection1();
