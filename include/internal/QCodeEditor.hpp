@@ -34,8 +34,7 @@ class QCodeEditor : public QTextEdit
         QChar left, right;
         bool autoComplete, autoRemove, tabJumpOut;
 
-        Parenthesis(const QChar &l = '(', const QChar &r = ')', bool complete = true, bool remove = true,
-                    bool jumpout = true)
+        Parenthesis(QChar l = '(', QChar r = ')', bool complete = true, bool remove = true, bool jumpout = true)
             : left(l), right(r), autoComplete(complete), autoRemove(remove), tabJumpOut(jumpout)
         {
         }
@@ -170,7 +169,7 @@ class QCodeEditor : public QTextEdit
      * part of line number area.
      * @param rect Area that has to be updated.
      */
-    void updateLineNumberArea(const QRect &rect);
+    void updateLineNumberArea(QRect rect);
 
     /**
      * @brief Slot, that will proceed extra selection

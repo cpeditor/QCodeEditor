@@ -181,7 +181,7 @@ void QCodeEditor::updateLineNumberAreaWidth(int)
     setViewportMargins(m_lineNumberArea->sizeHint().width(), 0, 0, 0);
 }
 
-void QCodeEditor::updateLineNumberArea(const QRect &rect)
+void QCodeEditor::updateLineNumberArea(QRect rect)
 {
     m_lineNumberArea->update(0, rect.y(), m_lineNumberArea->sizeHint().width(), rect.height());
     updateLineGeometry();
