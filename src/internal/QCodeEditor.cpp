@@ -51,7 +51,7 @@ void QCodeEditor::performConnections()
     connect(document(), &QTextDocument::blockCountChanged, this, &QCodeEditor::updateLineNumberAreaWidth);
     connect(document(), &QTextDocument::blockCountChanged, this, &QCodeEditor::updateBottomMargin);
 
-    connect(verticalScrollBar(), &QScrollBar::valueChanged, [this](int) { m_lineNumberArea->update(); });
+    connect(verticalScrollBar(), &QScrollBar::valueChanged, this, [this](int) { m_lineNumberArea->update(); });
 
     connect(this, &QTextEdit::cursorPositionChanged, this, &QCodeEditor::updateExtraSelection1);
     connect(this, &QTextEdit::selectionChanged, this, &QCodeEditor::updateExtraSelection2);
