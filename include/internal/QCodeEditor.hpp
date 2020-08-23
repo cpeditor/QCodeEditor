@@ -136,7 +136,7 @@ class QCodeEditor : public QTextEdit
      * @note QPair<int, int>: first -> Line number in 1-based indexing
      *                        second -> Character number in 0-based indexing
      */
-    void squiggle(SeverityLevel level, QPair<int, int>, QPair<int, int>, QString tooltipMessage);
+    void squiggle(SeverityLevel level, QPair<int, int>, QPair<int, int>, const QString &tooltipMessage);
 
     /**
      * @brief clearSquiggle, Clears complete squiggle from editor
@@ -156,7 +156,7 @@ class QCodeEditor : public QTextEdit
      * completion info into code.
      * @param s Data.
      */
-    void insertCompletion(QString s);
+    void insertCompletion(const QString &s);
 
     /**
      * @brief Slot, that performs update of
@@ -366,7 +366,7 @@ class QCodeEditor : public QTextEdit
     {
         SquiggleInformation() = default;
 
-        SquiggleInformation(QPair<int, int> start, QPair<int, int> stop, QString text)
+        SquiggleInformation(QPair<int, int> start, QPair<int, int> stop, const QString &text)
             : m_startPos(start), m_stopPos(stop), m_tooltipText(text)
         {
         }

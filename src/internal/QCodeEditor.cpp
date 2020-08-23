@@ -960,7 +960,7 @@ bool QCodeEditor::event(QEvent *event)
     return QTextEdit::event(event);
 }
 
-void QCodeEditor::insertCompletion(QString s)
+void QCodeEditor::insertCompletion(const QString &s)
 {
     if (m_completer->widget() != this)
     {
@@ -978,7 +978,8 @@ QCompleter *QCodeEditor::completer() const
     return m_completer;
 }
 
-void QCodeEditor::squiggle(SeverityLevel level, QPair<int, int> start, QPair<int, int> stop, QString tooltipMessage)
+void QCodeEditor::squiggle(SeverityLevel level, QPair<int, int> start, QPair<int, int> stop,
+                           const QString &tooltipMessage)
 {
     if (stop < start)
         return;
