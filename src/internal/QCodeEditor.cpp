@@ -682,7 +682,7 @@ void QCodeEditor::keyPressEvent(QKeyEvent *e)
             }
 
             auto c = charUnderCursor();
-            for (auto p : m_parentheses)
+            for (auto p : qAsConst(m_parentheses))
             {
                 if (p.tabJumpOut && c == p.right)
                 {
@@ -742,7 +742,7 @@ void QCodeEditor::keyPressEvent(QKeyEvent *e)
         {
             auto pre = charUnderCursor(-1);
             auto nxt = charUnderCursor();
-            for (auto p : m_parentheses)
+            for (auto p : qAsConst(m_parentheses))
             {
                 if (p.autoRemove && p.left == pre && p.right == nxt)
                 {
@@ -782,7 +782,7 @@ void QCodeEditor::keyPressEvent(QKeyEvent *e)
             }
         }
 
-        for (auto p : m_parentheses)
+        for (auto p : qAsConst(m_parentheses))
         {
             if (p.autoComplete)
             {
@@ -937,7 +937,7 @@ bool QCodeEditor::event(QEvent *event)
         QPair<int, int> positionOfTooltip{lineNumber, blockPositionStart};
 
         QString text;
-        for (auto const &e : m_squiggler)
+        for (auto const &e : qAsConst(m_squiggler))
         {
             if (e.m_startPos <= positionOfTooltip && e.m_stopPos >= positionOfTooltip)
             {
