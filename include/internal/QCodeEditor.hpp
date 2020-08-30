@@ -143,6 +143,16 @@ class QCodeEditor : public QTextEdit
      */
     void clearSquiggle();
 
+    /**
+     * @brief Enables or disables Vim Like cursor
+     */
+    void setVimCursor(bool value);
+
+    /**
+     * @brief Checks if cursor type is Vim Cursor
+     */
+    bool vimCursor() const;
+
   Q_SIGNALS:
     /**
      * @brief Signal, the font is changed by the wheel event.
@@ -384,10 +394,11 @@ class QCodeEditor : public QTextEdit
     bool m_autoIndentation;
     bool m_replaceTab;
     bool m_extraBottomMargin;
+    bool m_vimCursor;
     QString m_tabReplace;
 
     QList<QTextEdit::ExtraSelection> extra1, extra2, extra_squiggles;
-
+    QRect m_cursorRect;
     QVector<SquiggleInformation> m_squiggler;
 
     QVector<Parenthesis> m_parentheses;
