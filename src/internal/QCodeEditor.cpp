@@ -17,13 +17,13 @@
 #include <QFontDatabase>
 #include <QMimeData>
 #include <QPaintEvent>
+#include <QPainter>
 #include <QScrollBar>
 #include <QShortcut>
 #include <QTextBlock>
 #include <QTextCharFormat>
 #include <QTextStream>
 #include <QToolTip>
-#include <QPainter>
 
 QCodeEditor::QCodeEditor(QWidget *widget)
     : QTextEdit(widget), m_highlighter(nullptr), m_syntaxStyle(nullptr), m_lineNumberArea(new QLineNumberArea(this)),
@@ -546,8 +546,10 @@ void QCodeEditor::paintEvent(QPaintEvent *e)
     updateLineNumberArea(e->rect());
     QTextEdit::paintEvent(e);
 
-    if (m_vimCursor){
-    if ( !m_cursorRect.isNull() && e->rect().intersects(m_cursorRect) ) {
+    if (m_vimCursor)
+    {
+        if (!m_cursorRect.isNull() && e->rect().intersects(m_cursorRect))
+        {
             QRect rect = m_cursorRect;
             m_cursorRect = QRect();
             QTextEdit::viewport()->update(rect);
@@ -555,10 +557,12 @@ void QCodeEditor::paintEvent(QPaintEvent *e)
 
         // Draw text cursor.
         QRect rect = QTextEdit::cursorRect();
-        if ( e->rect().intersects(rect) ) {
+        if (e->rect().intersects(rect))
+        {
             QPainter painter(QTextEdit::viewport());
 
-            if ( QTextEdit::overwriteMode() ) {
+            if (QTextEdit::overwriteMode())
+            {
                 QFontMetrics fm(QTextEdit::font());
                 const int position = QTextEdit::textCursor().position();
                 const QChar c = QTextEdit::document()->characterAt(position);
@@ -566,7 +570,9 @@ void QCodeEditor::paintEvent(QPaintEvent *e)
                 painter.setPen(Qt::NoPen);
                 painter.setBrush(QTextEdit::palette().color(QPalette::Base));
                 painter.setCompositionMode(QPainter::CompositionMode_Difference);
-            } else {
+            }
+            else
+            {
                 rect.setWidth(QTextEdit::cursorWidth());
                 painter.setPen(QTextEdit::palette().color(QPalette::Text));
             }
@@ -908,12 +914,12 @@ void QCodeEditor::setTabReplace(bool enabled)
 
 void QCodeEditor::setVimCursor(bool enabled)
 {
-	m_vimCursor = enabled;
+    m_vimCursor = enabled;
 }
 
-bool QCodeEditor::vimCursor() const 
+bool QCodeEditor::vimCursor() const
 {
-	return m_vimCursor;
+    return m_vimCursor;
 }
 
 bool QCodeEditor::tabReplace() const
