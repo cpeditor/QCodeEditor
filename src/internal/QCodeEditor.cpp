@@ -23,11 +23,12 @@
 #include <QTextCharFormat>
 #include <QTextStream>
 #include <QToolTip>
+#include <QPainter>
 
 QCodeEditor::QCodeEditor(QWidget *widget)
     : QTextEdit(widget), m_highlighter(nullptr), m_syntaxStyle(nullptr), m_lineNumberArea(new QLineNumberArea(this)),
-      m_completer(nullptr), m_autoIndentation(true), m_replaceTab(true), m_extraBottomMargin(true),
-      m_tabReplace(QString(4, ' ')), extra1(), extra2(), extra_squiggles(), m_squiggler(),
+      m_completer(nullptr), m_autoIndentation(true), m_replaceTab(true), m_extraBottomMargin(true), m_vimCursor(false),
+      m_tabReplace(QString(4, ' ')), extra1(), extra2(), extra_squiggles(), m_cursorRect(), m_squiggler(),
       m_parentheses({{'(', ')'}, {'{', '}'}, {'[', ']'}, {'\"', '\"'}, {'\'', '\''}})
 {
     initFont();
@@ -544,6 +545,36 @@ void QCodeEditor::paintEvent(QPaintEvent *e)
 {
     updateLineNumberArea(e->rect());
     QTextEdit::paintEvent(e);
+
+    if (m_vimCursor){
+    if ( !m_cursorRect.isNull() && e->rect().intersects(m_cursorRect) ) {
+            QRect rect = m_cursorRect;
+            m_cursorRect = QRect();
+            QTextEdit::viewport()->update(rect);
+        }
+
+        // Draw text cursor.
+        QRect rect = QTextEdit::cursorRect();
+        if ( e->rect().intersects(rect) ) {
+            QPainter painter(QTextEdit::viewport());
+
+            if ( QTextEdit::overwriteMode() ) {
+                QFontMetrics fm(QTextEdit::font());
+                const int position = QTextEdit::textCursor().position();
+                const QChar c = QTextEdit::document()->characterAt(position);
+                rect.setWidth(fm.horizontalAdvance(c));
+                painter.setPen(Qt::NoPen);
+                painter.setBrush(QTextEdit::palette().color(QPalette::Base));
+                painter.setCompositionMode(QPainter::CompositionMode_Difference);
+            } else {
+                rect.setWidth(QTextEdit::cursorWidth());
+                painter.setPen(QTextEdit::palette().color(QPalette::Text));
+            }
+
+            painter.drawRect(rect);
+            m_cursorRect = rect;
+        }
+    }
 }
 
 int QCodeEditor::getFirstVisibleBlock()
@@ -873,6 +904,16 @@ bool QCodeEditor::autoIndentation() const
 void QCodeEditor::setTabReplace(bool enabled)
 {
     m_replaceTab = enabled;
+}
+
+void QCodeEditor::setVimCursor(bool enabled)
+{
+	m_vimCursor = enabled;
+}
+
+bool QCodeEditor::vimCursor() const 
+{
+	return m_vimCursor;
 }
 
 bool QCodeEditor::tabReplace() const
