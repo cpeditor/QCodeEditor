@@ -571,11 +571,6 @@ void QCodeEditor::paintEvent(QPaintEvent *e)
                 painter.setBrush(QTextEdit::palette().color(QPalette::Base));
                 painter.setCompositionMode(QPainter::CompositionMode_Difference);
             }
-            else
-            {
-                rect.setWidth(QTextEdit::cursorWidth());
-                painter.setPen(QTextEdit::palette().color(QPalette::Text));
-            }
 
             painter.drawRect(rect);
             m_cursorRect = rect;
