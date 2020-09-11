@@ -145,7 +145,7 @@ void QCodeEditor::wheelEvent(QWheelEvent *e)
             QFont newFont = font();
             newFont.setPointSize(newSize);
             setFont(newFont);
-            emit fontChanged(newFont);
+            Q_EMIT fontChanged(newFont);
         }
     }
     else
