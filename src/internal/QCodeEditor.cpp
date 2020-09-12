@@ -772,6 +772,27 @@ void QCodeEditor::keyPressEvent(QKeyEvent *e)
             return;
         }
 
+        // Toggle Overwrite and insert mode in non-vim modes.
+        if (e->key() == Qt::Key_Insert && !m_vimCursor)
+        {
+            setOverwriteMode(!overwriteMode());
+            if (overwriteMode())
+            {
+                QFontMetrics fm(QTextEdit::font());
+                const int position = QTextEdit::textCursor().position();
+                const QChar c = QTextEdit::document()->characterAt(position);
+                setCursorWidth(fm.horizontalAdvance(c));
+            }
+            else
+            {
+                auto rect = cursorRect();
+                setCursorWidth(1);
+                viewport()->update(rect);
+            }
+
+            return;
+        }
+
         if (e->key() == Qt::Key_Backspace && e->modifiers() == Qt::NoModifier && !textCursor().hasSelection())
         {
             auto pre = charUnderCursor(-1);
