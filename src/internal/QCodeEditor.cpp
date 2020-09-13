@@ -931,6 +931,9 @@ void QCodeEditor::setTabReplace(bool enabled)
 void QCodeEditor::setVimCursor(bool enabled)
 {
     m_vimCursor = enabled;
+
+    setOverwriteMode(false);
+    setCursorWidth(0);
 }
 
 bool QCodeEditor::vimCursor() const
