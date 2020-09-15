@@ -499,16 +499,15 @@ void QCodeEditor::highlightParenthesis()
 
 void QCodeEditor::highlightCurrentLine()
 {
-    if (!isReadOnly())
+    if (!isReadOnly() && !m_vimCursor)
     {
         QTextEdit::ExtraSelection selection{};
 
         selection.format = m_syntaxStyle->getFormat("CurrentLine");
         selection.format.setForeground(QBrush());
         selection.format.setProperty(QTextFormat::FullWidthSelection, true);
-        selection.cursor = textCursor();
-        selection.cursor.clearSelection();
-
+	selection.cursor = textCursor();
+	selection.cursor.clearSelection();
         extra1.append(selection);
     }
 }
