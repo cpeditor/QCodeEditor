@@ -568,8 +568,8 @@ void QCodeEditor::paintEvent(QPaintEvent *e)
                 const QChar c = QTextEdit::document()->characterAt(position);
                 rect.setWidth(fm.horizontalAdvance(c));
                 painter.setPen(Qt::NoPen);
-        	auto cursorColor = m_syntaxStyle->getFormat("Text").foreground().color();
-		painter.setBrush(m_syntaxStyle->name() == "Default" ? Qt::white : cursorColor);
+                auto cursorColor = m_syntaxStyle->getFormat("Text").foreground().color();
+                painter.setBrush(m_syntaxStyle->name() == "Default" ? Qt::white : cursorColor);
                 painter.setCompositionMode(QPainter::CompositionMode_Difference);
             }
 
