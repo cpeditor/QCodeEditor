@@ -153,6 +153,17 @@ class QCodeEditor : public QTextEdit
      */
     bool vimCursor() const;
 
+    /**
+     * @brief Enables or disables current line highlighting
+     * @note In vim mode this cannot enable line highlighting
+     */
+    void setHighlightCurrentLine(bool enabled);
+
+    /**
+     * @brief Checks if current line is being higlighted in non vim mode
+     */
+    bool isHighlightingCurrentLine() const;
+
   Q_SIGNALS:
     /**
      * @brief Signal, the font is changed by the wheel event.
@@ -395,6 +406,7 @@ class QCodeEditor : public QTextEdit
     bool m_replaceTab;
     bool m_extraBottomMargin;
     bool m_vimCursor;
+    bool m_highlightCurrentLine;
     QString m_tabReplace;
 
     QList<QTextEdit::ExtraSelection> extra1, extra2, extra_squiggles;

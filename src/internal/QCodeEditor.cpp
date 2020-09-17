@@ -24,12 +24,13 @@
 #include <QTextCharFormat>
 #include <QTextStream>
 #include <QToolTip>
+#include <qnamespace.h>
 
 QCodeEditor::QCodeEditor(QWidget *widget)
     : QTextEdit(widget), m_highlighter(nullptr), m_syntaxStyle(nullptr), m_lineNumberArea(new QLineNumberArea(this)),
       m_completer(nullptr), m_autoIndentation(true), m_replaceTab(true), m_extraBottomMargin(true), m_vimCursor(false),
-      m_tabReplace(QString(4, ' ')), extra1(), extra2(), extra_squiggles(), m_cursorRect(), m_squiggler(),
-      m_parentheses({{'(', ')'}, {'{', '}'}, {'[', ']'}, {'\"', '\"'}, {'\'', '\''}})
+      m_highlightCurrentLine(true), m_tabReplace(QString(4, ' ')), extra1(), extra2(), extra_squiggles(),
+      m_cursorRect(), m_squiggler(), m_parentheses({{'(', ')'}, {'{', '}'}, {'[', ']'}, {'\"', '\"'}, {'\'', '\''}})
 {
     initFont();
     performConnections();
@@ -499,15 +500,15 @@ void QCodeEditor::highlightParenthesis()
 
 void QCodeEditor::highlightCurrentLine()
 {
-    if (!isReadOnly() && !m_vimCursor)
+    if (m_highlightCurrentLine && !isReadOnly() && !m_vimCursor)
     {
         QTextEdit::ExtraSelection selection{};
 
         selection.format = m_syntaxStyle->getFormat("CurrentLine");
         selection.format.setForeground(QBrush());
         selection.format.setProperty(QTextFormat::FullWidthSelection, true);
-	selection.cursor = textCursor();
-	selection.cursor.clearSelection();
+        selection.cursor = textCursor();
+        selection.cursor.clearSelection();
         extra1.append(selection);
     }
 }
@@ -567,7 +568,8 @@ void QCodeEditor::paintEvent(QPaintEvent *e)
                 const QChar c = QTextEdit::document()->characterAt(position);
                 rect.setWidth(fm.horizontalAdvance(c));
                 painter.setPen(Qt::NoPen);
-                painter.setBrush(QTextEdit::palette().color(QPalette::Base));
+        	auto cursorColor = m_syntaxStyle->getFormat("Text").foreground().color();
+		painter.setBrush(m_syntaxStyle->name() == "Default" ? Qt::white : cursorColor);
                 painter.setCompositionMode(QPainter::CompositionMode_Difference);
             }
 
@@ -927,12 +929,22 @@ void QCodeEditor::setTabReplace(bool enabled)
     m_replaceTab = enabled;
 }
 
+void QCodeEditor::setHighlightCurrentLine(bool enabled)
+{
+    m_highlightCurrentLine = enabled;
+}
+
 void QCodeEditor::setVimCursor(bool enabled)
 {
     m_vimCursor = enabled;
 
     setOverwriteMode(false);
     setCursorWidth(0);
+}
+
+bool QCodeEditor::isHighlightingCurrentLine() const
+{
+    return m_highlightCurrentLine;
 }
 
 bool QCodeEditor::vimCursor() const
