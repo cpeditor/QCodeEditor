@@ -24,7 +24,6 @@
 #include <QTextCharFormat>
 #include <QTextStream>
 #include <QToolTip>
-#include <qnamespace.h>
 
 QCodeEditor::QCodeEditor(QWidget *widget)
     : QTextEdit(widget), m_highlighter(nullptr), m_syntaxStyle(nullptr), m_lineNumberArea(new QLineNumberArea(this)),
