@@ -296,6 +296,13 @@ class QCodeEditor : public QTextEdit
     void focusInEvent(QFocusEvent *e) override;
 
     /**
+     * @brief Method, that's called on focus loss
+     * It's required for setting block cursor
+     * in fakevim mode.
+     */
+    void focusOutEvent(QFocusEvent *e) override;
+
+    /**
      * @brief Method for tooltip generation
      */
     bool event(QEvent *e) override;

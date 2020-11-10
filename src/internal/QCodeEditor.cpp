@@ -994,6 +994,16 @@ void QCodeEditor::focusInEvent(QFocusEvent *e)
     QTextEdit::focusInEvent(e);
 }
 
+void QCodeEditor::focusOutEvent(QFocusEvent *e)
+{
+    if (m_vimCursor)
+    {
+        setOverwriteMode(true); // makes a block cursor when focus is lost
+    }
+
+    QTextEdit::focusOutEvent(e);
+}
+
 bool QCodeEditor::event(QEvent *event)
 {
     if (event->type() == QEvent::ToolTip)
