@@ -938,7 +938,7 @@ void QCodeEditor::setVimCursor(bool enabled)
     m_vimCursor = enabled;
 
     setOverwriteMode(false);
-    setCursorWidth(0);
+    setCursorWidth(enabled ? 0 : 1);
 }
 
 bool QCodeEditor::isHighlightingCurrentLine() const
