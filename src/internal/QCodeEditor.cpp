@@ -419,81 +419,78 @@ void QCodeEditor::toggleBlockComment()
 
 void QCodeEditor::highlightParenthesis()
 {
-    auto currentSymbol = charUnderCursor();
-    auto prevSymbol = charUnderCursor(-1);
+    const auto text = toPlainText();
+    const int currentPosition = textCursor().position();
 
-    for (auto &p : m_parentheses)
+    QChar activeSymbol;
+    int activePosition;
+    QChar counterSymbol;
+    int direction = 0;
+
+    // check both the current character and the previous character if the cursor is between two characters
+    for (activePosition = currentPosition; activePosition >= (overwriteMode() ? currentPosition : currentPosition - 1);
+         --activePosition)
     {
-        int direction;
-
-        QChar counterSymbol;
-        QChar activeSymbol;
-        auto position = textCursor().position();
-
-        if (p.left == currentSymbol)
-        {
-            direction = 1;
-            counterSymbol = p.right;
-            activeSymbol = currentSymbol;
-        }
-        else if (p.right == prevSymbol)
-        {
-            direction = -1;
-            counterSymbol = p.left;
-            activeSymbol = prevSymbol;
-            position--;
-        }
-        else
-        {
+        if (activePosition < 0 || activePosition >= text.length())
             continue;
+
+        activeSymbol = text[activePosition];
+
+        for (const auto &p : m_parentheses)
+        {
+            if (p.left == p.right)
+                continue;
+            if (activeSymbol == p.left)
+            {
+                direction = 1;
+                counterSymbol = p.right;
+                break;
+            }
+            if (activeSymbol == p.right)
+            {
+                direction = -1;
+                counterSymbol = p.left;
+                break;
+            }
         }
 
-        auto counter = 1;
+        if (direction != 0)
+            break;
+    }
 
-        while (counter != 0 && position > 0 && position < (document()->characterCount() - 1))
+    if (direction == 0) // not a parenthesis
+        return;
+
+    int matchPosition = -1;
+    int count = 1;
+
+    for (int i = activePosition + direction; i >= 0 && i < text.length(); i += direction)
+    {
+        if (text[i] == activeSymbol)
+            ++count;
+        else if (text[i] == counterSymbol)
+            --count;
+        if (count == 0)
         {
-            // Moving position
-            position += direction;
-
-            auto character = document()->characterAt(position);
-            // Checking symbol under position
-            if (character == activeSymbol)
-            {
-                ++counter;
-            }
-            else if (character == counterSymbol)
-            {
-                --counter;
-            }
+            matchPosition = i;
+            break;
         }
+    }
 
-        auto format = m_syntaxStyle->getFormat("Parentheses");
-
-        // Found
-        if (counter == 0)
-        {
-            ExtraSelection selection{};
-
-            auto directionEnum = direction < 0 ? QTextCursor::MoveOperation::Left : QTextCursor::MoveOperation::Right;
-
-            selection.format = format;
+    if (matchPosition >= 0) // Match found
+    {
+        auto addExtra = [&](int pos) {
+            ExtraSelection selection;
+            selection.format = m_syntaxStyle->getFormat("Parentheses");
             selection.cursor = textCursor();
             selection.cursor.clearSelection();
-            selection.cursor.movePosition(directionEnum, QTextCursor::MoveMode::MoveAnchor,
-                                          qAbs(textCursor().position() - position));
-
-            selection.cursor.movePosition(QTextCursor::MoveOperation::Right, QTextCursor::MoveMode::KeepAnchor, 1);
-
+            selection.cursor.setPosition(pos);
+            selection.cursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor);
             extra1.append(selection);
+        };
 
-            selection.cursor = textCursor();
-            selection.cursor.clearSelection();
-            selection.cursor.movePosition(directionEnum, QTextCursor::MoveMode::KeepAnchor, 1);
-
-            extra1.append(selection);
-        }
-
-        break;
+        addExtra(activePosition);
+        addExtra(matchPosition);
     }
 }
 
@@ -551,20 +548,20 @@ void QCodeEditor::paintEvent(QPaintEvent *e)
         {
             QRect rect = m_cursorRect;
             m_cursorRect = QRect();
-            QTextEdit::viewport()->update(rect);
+            viewport()->update(rect);
         }
 
         // Draw text cursor.
-        QRect rect = QTextEdit::cursorRect();
+        QRect rect = cursorRect();
         if (e->rect().intersects(rect))
         {
-            QPainter painter(QTextEdit::viewport());
+            QPainter painter(viewport());
 
-            if (QTextEdit::overwriteMode())
+            if (overwriteMode())
             {
-                QFontMetrics fm(QTextEdit::font());
-                const int position = QTextEdit::textCursor().position();
-                const QChar c = QTextEdit::document()->characterAt(position);
+                QFontMetrics fm(font());
+                const int position = textCursor().position();
+                const QChar c = document()->characterAt(position);
                 rect.setWidth(fm.horizontalAdvance(c));
                 painter.setPen(Qt::NoPen);
                 auto cursorColor = m_syntaxStyle->getFormat("Text").foreground().color();
