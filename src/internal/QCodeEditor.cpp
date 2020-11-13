@@ -568,6 +568,11 @@ void QCodeEditor::paintEvent(QPaintEvent *e)
                 painter.setBrush(m_syntaxStyle->name() == "Default" ? Qt::white : cursorColor);
                 painter.setCompositionMode(QPainter::CompositionMode_Difference);
             }
+            else
+            {
+                rect.setWidth(cursorWidth());
+                painter.setPen(m_syntaxStyle->getFormat("Text").foreground().color());
+            }
 
             painter.drawRect(rect);
             m_cursorRect = rect;
