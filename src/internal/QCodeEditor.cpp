@@ -463,12 +463,18 @@ void QCodeEditor::highlightParenthesis()
 
     int matchPosition = -1;
     int count = 1;
+    int singleQuoteCounter = 0;
+    int doubleQuoteCounter = 0;
 
     for (int i = activePosition + direction; i >= 0 && i < text.length(); i += direction)
     {
-        if (text[i] == activeSymbol)
+        if (text[i] == "'")
+            singleQuoteCounter++;
+        else if (text[i] == "\"")
+            doubleQuoteCounter++;
+        else if (text[i] == activeSymbol && singleQuoteCounter % 2 == 0 && doubleQuoteCounter % 2 == 0)
             ++count;
-        else if (text[i] == counterSymbol)
+        else if (text[i] == counterSymbol && singleQuoteCounter % 2 == 0 && doubleQuoteCounter % 2 == 0)
             --count;
         if (count == 0)
         {
