@@ -682,6 +682,12 @@ void QCodeEditor::keyPressEvent(QKeyEvent *e)
 
     if (!completerSkip)
     {
+		if(m_vimCursor)
+		{
+			QTextEdit::keyPressEvent(e);
+			proceedCompleterEnd(e);
+			return;
+		}
         if ((e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter) && e->modifiers() != Qt::NoModifier)
         {
             QKeyEvent pureEnter(QEvent::KeyPress, Qt::Key_Enter, Qt::NoModifier);
