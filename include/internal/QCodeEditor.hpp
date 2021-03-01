@@ -143,6 +143,16 @@ class QCodeEditor : public QTextEdit
      */
     void clearSquiggle();
 
+    /**
+     * @brief Method for setting indentation guide enabled.
+     */
+    void setIndentationGuide(bool enabled);
+
+    /**
+     * @brief Method for setting indentation guide style.
+     */
+    void setIndentationGuideStyle(Qt::PenStyle style);
+
   Q_SIGNALS:
     /**
      * @brief Signal, the font is changed by the wheel event.
@@ -360,6 +370,13 @@ class QCodeEditor : public QTextEdit
     void addInEachLineOfSelection(const QRegularExpression &regex, const QString &str);
 
     /**
+     * @brief Method, that paints the
+     * indentation guide if enabled.
+     * @param rect Area that has to be updated.
+     */
+    void paintIndentationGuide(const QRect &rect);
+
+    /**
      * @brief The SquiggleInformation struct, Line number will be index of vector+1;
      */
     struct SquiggleInformation
@@ -391,4 +408,6 @@ class QCodeEditor : public QTextEdit
     QVector<SquiggleInformation> m_squiggler;
 
     QVector<Parenthesis> m_parentheses;
+    bool m_indentationGuide;
+    Qt::PenStyle m_indentationGuideStyle;
 };

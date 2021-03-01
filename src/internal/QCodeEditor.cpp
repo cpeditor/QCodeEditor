@@ -17,6 +17,7 @@
 #include <QFontDatabase>
 #include <QMimeData>
 #include <QPaintEvent>
+#include <QPainter>
 #include <QScrollBar>
 #include <QShortcut>
 #include <QTextBlock>
@@ -28,7 +29,8 @@ QCodeEditor::QCodeEditor(QWidget *widget)
     : QTextEdit(widget), m_highlighter(nullptr), m_syntaxStyle(nullptr), m_lineNumberArea(new QLineNumberArea(this)),
       m_completer(nullptr), m_autoIndentation(true), m_replaceTab(true), m_extraBottomMargin(true),
       m_tabReplace(QString(4, ' ')), extra1(), extra2(), extra_squiggles(), m_squiggler(),
-      m_parentheses({{'(', ')'}, {'{', '}'}, {'[', ']'}, {'\"', '\"'}, {'\'', '\''}})
+      m_parentheses({{'(', ')'}, {'{', '}'}, {'[', ']'}, {'\"', '\"'}, {'\'', '\''}}), m_indentationGuide(true),
+      m_indentationGuideStyle(Qt::DashLine)
 {
     initFont();
     performConnections();
@@ -543,6 +545,10 @@ void QCodeEditor::highlightOccurrences()
 void QCodeEditor::paintEvent(QPaintEvent *e)
 {
     updateLineNumberArea(e->rect());
+    if (m_indentationGuide)
+    {
+        paintIndentationGuide(e->rect());
+    }
     QTextEdit::paintEvent(e);
 }
 
@@ -852,6 +858,16 @@ void QCodeEditor::keyPressEvent(QKeyEvent *e)
 void QCodeEditor::setAutoIndentation(bool enabled)
 {
     m_autoIndentation = enabled;
+}
+
+void QCodeEditor::setIndentationGuide(bool enabled)
+{
+    m_indentationGuide = enabled;
+}
+
+void QCodeEditor::setIndentationGuideStyle(Qt::PenStyle style)
+{
+    m_indentationGuideStyle = style;
 }
 
 void QCodeEditor::setParentheses(const QVector<Parenthesis> &parentheses)
@@ -1176,4 +1192,39 @@ void QCodeEditor::addInEachLineOfSelection(const QRegularExpression &regex, cons
         cursor.setPosition(pos, QTextCursor::KeepAnchor);
     }
     setTextCursor(cursor);
+}
+
+void QCodeEditor::paintIndentationGuide(const QRect &rect)
+{
+    QPainter painter;
+    painter.begin(viewport());
+    QPen pen(QColor(128, 128, 128)); // Gray color
+    pen.setStyle(m_indentationGuideStyle);
+    painter.setPen(pen);
+    auto cursor = textCursor();
+    cursor.movePosition(QTextCursor::Start);
+    do
+    {
+        auto line = cursor.block().text().replace("\t", m_tabReplace);
+        QString indentationSpaces = QRegularExpression("^\\s*").match(line).captured();
+        unsigned int indentationCount = indentationSpaces.count() >= 4 ? (indentationSpaces.count() / 4) - 1 : 0;
+        auto offset = 0U;
+        while (indentationCount--)
+        {
+            auto cursorRct = cursorRect(cursor);
+            if (!rect.contains(cursorRct))
+            {
+                break;
+            }
+            offset += m_tabReplace.count();
+            auto cursorPosition = cursor.position();
+            cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, offset);
+            auto guideWidth = fontMetrics().horizontalAdvance(QString("i").repeated(offset));
+            guideWidth += 10; // Put it more under the block
+            painter.drawLine(guideWidth, cursorRct.top(), guideWidth, cursorRct.bottom());
+            cursor.setPosition(cursorPosition);
+        }
+    } while (cursor.movePosition(QTextCursor::NextBlock));
+
+    painter.end();
 }
