@@ -842,6 +842,17 @@ void QCodeEditor::keyPressEvent(QKeyEvent *e)
             setTextCursor(textCursor()); // scroll to the cursor
             return;
         }
+        
+        if (e->key() == Qt::Key_Home)
+        {
+            auto cursor = textCursor();
+            cursor.movePosition(QTextCursor::StartOfLine);
+            auto line = cursor.block().text();
+            QString startingSpaces = QRegularExpression("^\\s*").match(line).captured();
+            cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, startingSpaces.count());
+            setTextCursor(cursor);
+            return;
+        }
 
         QTextEdit::keyPressEvent(e);
     }
