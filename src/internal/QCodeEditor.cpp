@@ -843,6 +843,17 @@ void QCodeEditor::keyPressEvent(QKeyEvent *e)
             return;
         }
 
+        if (e->matches(QKeySequence::MoveToStartOfLine))
+        {
+            auto cursor = textCursor();
+            cursor.movePosition(QTextCursor::StartOfLine);
+            auto line = cursor.block().text();
+            QString startingSpaces = QRegularExpression("^\\s*").match(line).captured();
+            cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, startingSpaces.count());
+            setTextCursor(cursor);
+            return;
+        }
+
         QTextEdit::keyPressEvent(e);
     }
 
