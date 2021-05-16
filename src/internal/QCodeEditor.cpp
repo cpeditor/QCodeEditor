@@ -843,7 +843,7 @@ void QCodeEditor::keyPressEvent(QKeyEvent *e)
             return;
         }
 
-        if (e->key() == Qt::Key_Escape)
+        if (e->key() == Qt::Key_Escape && textCursor().hasSelection())
         {
             auto cursor = textCursor();
             cursor.clearSelection();
