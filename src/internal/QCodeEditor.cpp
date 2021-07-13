@@ -17,6 +17,7 @@
 #include <QFontDatabase>
 #include <QMimeData>
 #include <QPaintEvent>
+#include <QPainter>
 #include <QScrollBar>
 #include <QShortcut>
 #include <QTextBlock>
@@ -26,9 +27,9 @@
 
 QCodeEditor::QCodeEditor(QWidget *widget)
     : QTextEdit(widget), m_highlighter(nullptr), m_syntaxStyle(nullptr), m_lineNumberArea(new QLineNumberArea(this)),
-      m_completer(nullptr), m_autoIndentation(true), m_replaceTab(true), m_extraBottomMargin(true),
-      m_tabReplace(QString(4, ' ')), extra1(), extra2(), extra_squiggles(), m_squiggler(),
-      m_parentheses({{'(', ')'}, {'{', '}'}, {'[', ']'}, {'\"', '\"'}, {'\'', '\''}})
+      m_completer(nullptr), m_autoIndentation(true), m_replaceTab(true), m_extraBottomMargin(true), m_vimCursor(false),
+      m_highlightCurrentLine(true), m_tabReplace(QString(4, ' ')), extra1(), extra2(), extra_squiggles(),
+      m_cursorRect(), m_squiggler(), m_parentheses({{'(', ')'}, {'{', '}'}, {'[', ']'}, {'\"', '\"'}, {'\'', '\''}})
 {
     initFont();
     performConnections();
@@ -416,87 +417,90 @@ void QCodeEditor::toggleBlockComment()
 
 void QCodeEditor::highlightParenthesis()
 {
-    auto currentSymbol = charUnderCursor();
-    auto prevSymbol = charUnderCursor(-1);
+    const auto text = toPlainText();
+    const int currentPosition = textCursor().position();
 
-    for (auto &p : m_parentheses)
+    QChar activeSymbol;
+    int activePosition;
+    QChar counterSymbol;
+    int direction = 0;
+
+    // check both the current character and the previous character if the cursor is between two characters
+    for (activePosition = currentPosition; activePosition >= (overwriteMode() ? currentPosition : currentPosition - 1);
+         --activePosition)
     {
-        int direction;
-
-        QChar counterSymbol;
-        QChar activeSymbol;
-        auto position = textCursor().position();
-
-        if (p.left == currentSymbol)
-        {
-            direction = 1;
-            counterSymbol = p.right;
-            activeSymbol = currentSymbol;
-        }
-        else if (p.right == prevSymbol)
-        {
-            direction = -1;
-            counterSymbol = p.left;
-            activeSymbol = prevSymbol;
-            position--;
-        }
-        else
-        {
+        if (activePosition < 0 || activePosition >= text.length())
             continue;
+
+        activeSymbol = text[activePosition];
+
+        for (const auto &p : m_parentheses)
+        {
+            if (p.left == p.right)
+                continue;
+            if (activeSymbol == p.left)
+            {
+                direction = 1;
+                counterSymbol = p.right;
+                break;
+            }
+            if (activeSymbol == p.right)
+            {
+                direction = -1;
+                counterSymbol = p.left;
+                break;
+            }
         }
 
-        auto counter = 1;
+        if (direction != 0)
+            break;
+    }
 
-        while (counter != 0 && position > 0 && position < (document()->characterCount() - 1))
+    if (direction == 0) // not a parenthesis
+        return;
+
+    int matchPosition = -1;
+    int count = 1;
+    int singleQuoteCounter = 0;
+    int doubleQuoteCounter = 0;
+
+    for (int i = activePosition + direction; i >= 0 && i < text.length(); i += direction)
+    {
+        if (text[i] == "'")
+            singleQuoteCounter++;
+        else if (text[i] == "\"")
+            doubleQuoteCounter++;
+        else if (text[i] == activeSymbol && singleQuoteCounter % 2 == 0 && doubleQuoteCounter % 2 == 0)
+            ++count;
+        else if (text[i] == counterSymbol && singleQuoteCounter % 2 == 0 && doubleQuoteCounter % 2 == 0)
+            --count;
+        if (count == 0)
         {
-            // Moving position
-            position += direction;
-
-            auto character = document()->characterAt(position);
-            // Checking symbol under position
-            if (character == activeSymbol)
-            {
-                ++counter;
-            }
-            else if (character == counterSymbol)
-            {
-                --counter;
-            }
+            matchPosition = i;
+            break;
         }
+    }
 
-        auto format = m_syntaxStyle->getFormat("Parentheses");
-
-        // Found
-        if (counter == 0)
-        {
-            ExtraSelection selection{};
-
-            auto directionEnum = direction < 0 ? QTextCursor::MoveOperation::Left : QTextCursor::MoveOperation::Right;
-
-            selection.format = format;
+    if (matchPosition >= 0) // Match found
+    {
+        auto addExtra = [&](int pos) {
+            ExtraSelection selection;
+            selection.format = m_syntaxStyle->getFormat("Parentheses");
             selection.cursor = textCursor();
             selection.cursor.clearSelection();
-            selection.cursor.movePosition(directionEnum, QTextCursor::MoveMode::MoveAnchor,
-                                          qAbs(textCursor().position() - position));
-
-            selection.cursor.movePosition(QTextCursor::MoveOperation::Right, QTextCursor::MoveMode::KeepAnchor, 1);
-
+            selection.cursor.setPosition(pos);
+            selection.cursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor);
             extra1.append(selection);
+        };
 
-            selection.cursor = textCursor();
-            selection.cursor.clearSelection();
-            selection.cursor.movePosition(directionEnum, QTextCursor::MoveMode::KeepAnchor, 1);
-
-            extra1.append(selection);
-        }
-
-        break;
+        addExtra(activePosition);
+        addExtra(matchPosition);
     }
 }
 
 void QCodeEditor::highlightCurrentLine()
 {
-    if (!isReadOnly())
+    if (m_highlightCurrentLine && !isReadOnly() && !m_vimCursor)
     {
         QTextEdit::ExtraSelection selection{};
 
@@ -505,7 +509,6 @@ void QCodeEditor::highlightCurrentLine()
         selection.format.setProperty(QTextFormat::FullWidthSelection, true);
         selection.cursor = textCursor();
         selection.cursor.clearSelection();
-
         extra1.append(selection);
     }
 }
@@ -542,6 +545,43 @@ void QCodeEditor::paintEvent(QPaintEvent *e)
 {
     updateLineNumberArea(e->rect());
     QTextEdit::paintEvent(e);
+
+    if (m_vimCursor)
+    {
+        if (!m_cursorRect.isNull() && e->rect().intersects(m_cursorRect))
+        {
+            QRect rect = m_cursorRect;
+            m_cursorRect = QRect();
+            viewport()->update(rect);
+        }
+
+        // Draw text cursor.
+        QRect rect = cursorRect();
+        if (e->rect().intersects(rect))
+        {
+            QPainter painter(viewport());
+
+            if (overwriteMode())
+            {
+                QFontMetrics fm(font());
+                const int position = textCursor().position();
+                const QChar c = document()->characterAt(position);
+                rect.setWidth(fm.horizontalAdvance(c));
+                painter.setPen(Qt::NoPen);
+                auto cursorColor = m_syntaxStyle->getFormat("Text").foreground().color();
+                painter.setBrush(m_syntaxStyle->name() == "Default" ? Qt::white : cursorColor);
+                painter.setCompositionMode(QPainter::CompositionMode_Difference);
+            }
+            else
+            {
+                rect.setWidth(cursorWidth());
+                painter.setPen(m_syntaxStyle->getFormat("Text").foreground().color());
+            }
+
+            painter.drawRect(rect);
+            m_cursorRect = rect;
+        }
+    }
 }
 
 int QCodeEditor::getFirstVisibleBlock()
@@ -640,6 +680,12 @@ void QCodeEditor::keyPressEvent(QKeyEvent *e)
 
     if (!completerSkip)
     {
+        if (m_vimCursor)
+        {
+            QTextEdit::keyPressEvent(e);
+            proceedCompleterEnd(e);
+            return;
+        }
         if ((e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter) && e->modifiers() != Qt::NoModifier)
         {
             QKeyEvent pureEnter(QEvent::KeyPress, Qt::Key_Enter, Qt::NoModifier);
@@ -735,6 +781,27 @@ void QCodeEditor::keyPressEvent(QKeyEvent *e)
         {
             insertPlainText("\n" + indentationSpaces + (m_replaceTab ? m_tabReplace : "\t"));
             setTextCursor(textCursor()); // scroll to the cursor
+            return;
+        }
+
+        // Toggle Overwrite and insert mode in non-vim modes.
+        if (e->key() == Qt::Key_Insert && !m_vimCursor)
+        {
+            setOverwriteMode(!overwriteMode());
+            if (overwriteMode())
+            {
+                QFontMetrics fm(QTextEdit::font());
+                const int position = QTextEdit::textCursor().position();
+                const QChar c = QTextEdit::document()->characterAt(position);
+                setCursorWidth(fm.horizontalAdvance(c));
+            }
+            else
+            {
+                auto rect = cursorRect();
+                setCursorWidth(1);
+                viewport()->update(rect);
+            }
+
             return;
         }
 
@@ -880,6 +947,29 @@ void QCodeEditor::setTabReplace(bool enabled)
     m_replaceTab = enabled;
 }
 
+void QCodeEditor::setHighlightCurrentLine(bool enabled)
+{
+    m_highlightCurrentLine = enabled;
+}
+
+void QCodeEditor::setVimCursor(bool enabled)
+{
+    m_vimCursor = enabled;
+
+    setOverwriteMode(false);
+    setCursorWidth(enabled ? 0 : 1);
+}
+
+bool QCodeEditor::isHighlightingCurrentLine() const
+{
+    return m_highlightCurrentLine;
+}
+
+bool QCodeEditor::vimCursor() const
+{
+    return m_vimCursor;
+}
+
 bool QCodeEditor::tabReplace() const
 {
     return m_replaceTab;
@@ -930,6 +1020,16 @@ void QCodeEditor::focusInEvent(QFocusEvent *e)
     }
 
     QTextEdit::focusInEvent(e);
+}
+
+void QCodeEditor::focusOutEvent(QFocusEvent *e)
+{
+    if (m_vimCursor)
+    {
+        setOverwriteMode(true); // makes a block cursor when focus is lost
+    }
+
+    QTextEdit::focusOutEvent(e);
 }
 
 bool QCodeEditor::event(QEvent *event)
